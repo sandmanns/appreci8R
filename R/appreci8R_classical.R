@@ -920,35 +920,34 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
 
             }
             if(`1kgenomes`==TRUE){
-                snp_info<-mafByOverlaps(g1000,paste(frequency_calls[i,2],":",
-                                                    frequency_calls[i,3],"-",
-                                                    frequency_calls[i,3],
-                                                    sep=""))
+                snp_info<-gscores(g1000,GRanges(paste(frequency_calls[i,2],":",
+                                                      frequency_calls[i,3],
+                                                      sep="")))
                 if(length(snp_info)>0){
                     results$G1000_AF[i]<-max(snp_info$AF)
                 }
             }
             if(exacDB==TRUE){
-                snp_info<-mafByOverlaps(exac,paste(frequency_calls[i,2],":",
-                                                   frequency_calls[i,3],"-",
-                                                   frequency_calls[i,3],sep=""))
+                snp_info<-gscores(exac,GRanges(paste(frequency_calls[i,2],":",
+                                                     frequency_calls[i,3],
+                                                     sep="")))
                 if(length(snp_info)>0){
                     results$ExAC_AF[i]<-max(snp_info$AF)
                 }
             }
             if(espDB==TRUE){
-                snp_info<-mafByOverlaps(esp6500,paste(frequency_calls[i,2],
-                                                      ":",frequency_calls[i,3],
-                                                      "-",frequency_calls[i,3],
-                                                      sep=""))
+                snp_info<-gscores(esp6500,GRanges(paste(frequency_calls[i,2],
+                                                        ":",
+                                                        frequency_calls[i,3],
+                                                        sep="")))
                 if(length(snp_info)>0){
                     results$ESP6500_AF[i]<-max(snp_info$AF)
                 }
             }
             if(gadDB==TRUE){
-                snp_info<-mafByOverlaps(gad,paste(frequency_calls[i,2],":",
-                                                  frequency_calls[i,3],"-",
-                                                  frequency_calls[i,3],sep=""))
+                snp_info<-gscores(gad,GRanges(paste(frequency_calls[i,2],":",
+                                                    frequency_calls[i,3],
+                                                    sep="")))
                 if(length(snp_info)>0){
                     results$GAD_AF[i]<-max(snp_info$AF)
                 }
