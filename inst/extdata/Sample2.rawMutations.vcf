@@ -1,0 +1,35 @@
+##fileformat=VCFv4.1
+##contig=<ID=1,length=249250621>
+##contig=<ID=2,length=243199373>
+##contig=<ID=3,length=198022430>
+##contig=<ID=4,length=191154276>
+##contig=<ID=5,length=180915260>
+##contig=<ID=6,length=171115067>
+##contig=<ID=7,length=159138663>
+##contig=<ID=8,length=146364022>
+##contig=<ID=9,length=141213431>
+##contig=<ID=10,length=135534747>
+##contig=<ID=11,length=135006516>
+##contig=<ID=12,length=133851895>
+##contig=<ID=13,length=115169878>
+##contig=<ID=14,length=107349540>
+##contig=<ID=15,length=102531392>
+##contig=<ID=16,length=90354753>
+##contig=<ID=17,length=81195210>
+##contig=<ID=18,length=78077248>
+##contig=<ID=19,length=59128983>
+##contig=<ID=20,length=63025520>
+##contig=<ID=21,length=48129895>
+##contig=<ID=22,length=51304566>
+##contig=<ID=X,length=155270560>
+##contig=<ID=Y,length=59373566>
+##contig=<ID=MT,length=16569>
+##reference=file:/Genomes/Homo_sapiens.GRCh37.67/gatk-3.3.0/Homo_sapiens.GRCh37.67.dna.chromosome.all.fasta
+##source=SelectVariants
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Sample2
+4	106196951	rs2454206	A	G	3135.77	.		GT:AD:DP:GQ:PL	0/1:84,86:170:99:3164,0,3076
+12	12046289	rs10649660	C	CAAAG	15.85	LowQual		GT:AD:DP:GQ:PL	0/1:52,5:57:53:53,0,2353
+12	12046341	rs2855748	A	G	2711.77	.		GT:AD:DP:GQ:PL	0/1:94,81:175:99:2740,0,3467
+17	7579472	rs1042522	G	C	1264.77	.		GT:AD:DP:GQ:PL	1/1:0,31:31:93:1293,93,0
+20	31025689	rs41289852	G	C	4098.77	.		GT:AD:DP:GQ:PL	0/1:120,120:240:99:4127,0,4038
+21	36164405	rs13051066	G	T	270.77	.		GT:AD:DP:GQ:PL	0/1:4,10:14:99:299,0,119
