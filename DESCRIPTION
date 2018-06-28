@@ -12,7 +12,7 @@ Description: The appreci8R is an R version of our appreci8-algorithm - A Pipelin
 License: LGPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: shiny, shinyjs, DT, VariantAnnotation, BSgenome, BSgenome.Hsapiens.UCSC.hg19, TxDb.Hsapiens.UCSC.hg19.knownGene, Homo.sapiens, SNPlocs.Hsapiens.dbSNP144.GRCh37, XtraSNPlocs.Hsapiens.dbSNP144.GRCh37, rsnps, Biostrings, MafDb.1Kgenomes.phase3.hs37d5, MafDb.ExAC.r1.0.hs37d5, MafDb.ESP6500SI.V2.SSA137.hs37d5, MafDb.gnomADex.r2.0.1.hs37d5, COSMIC.67, rentrez, PolyPhen.Hsapiens.dbSNP131, SIFT.Hsapiens.dbSNP137, seqinr, openxlsx, Rsamtools, stringr, utils, stats, GenomicRanges, S4Vectors, GenomicFeatures, IRanges, VariantFiltering, SummarizedExperiment
+Imports: shiny, shinyjs, DT, VariantAnnotation, BSgenome, BSgenome.Hsapiens.UCSC.hg19, TxDb.Hsapiens.UCSC.hg19.knownGene, Homo.sapiens, SNPlocs.Hsapiens.dbSNP144.GRCh37, XtraSNPlocs.Hsapiens.dbSNP144.GRCh37, rsnps, Biostrings, MafDb.1Kgenomes.phase3.hs37d5, MafDb.ExAC.r1.0.hs37d5, MafDb.ESP6500SI.V2.SSA137.hs37d5, MafDb.gnomADex.r2.0.1.hs37d5, COSMIC.67, rentrez, PolyPhen.Hsapiens.dbSNP131, SIFT.Hsapiens.dbSNP137, seqinr, openxlsx, Rsamtools, stringr, utils, stats, GenomicRanges, S4Vectors, GenomicFeatures, IRanges, GenomicScores, SummarizedExperiment
 Suggests: GO.db, org.Hs.eg.db
 biocViews: VariantDetection, GeneticVariability, SNP, VariantAnnotation, Sequencing, 
 RoxygenNote: 6.0.1

@@ -262,7 +262,8 @@ Exemplary filtration of a set of combined calls:
 
 <<8>>=
 output_folder <- ""
-bam_folder <- system.file("extdata/", package = "appreci8R")
+bam_folder <- system.file("extdata", package = "appreci8R")
+bam_folder <- paste(bam_folder, "/", sep="")
 
 #Input:
 combined

@@ -398,7 +398,8 @@ Exemplary filtration of a set of combined calls:
 \begin{Schunk}
 \begin{Sinput}
 > output_folder <- ""
-> bam_folder <- system.file("extdata/", package = "appreci8R")
+> bam_folder <- system.file("extdata", package = "appreci8R")
+> bam_folder <- paste(bam_folder, "/", sep="")
 > #Input:
 > combined
 \end{Sinput}
