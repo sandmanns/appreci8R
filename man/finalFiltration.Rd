@@ -294,8 +294,9 @@ databases<-cbind(filtered[,1:5],data.frame(dbSNP = c("rs2454206",NA),
                                            stringsAsFactors = FALSE))
 combined=filtered[,1:18]
 
+\donttest{
 final<-finalFiltration("", frequency_calls = filtered,
                        database_calls = databases, combined_calls = combined,
                        damaging_safe = -3, tolerated_safe = -1.5,
                        overlapTools = c("VarScan"), bq_diff = 20,vaf = 0.001)
-}
+}}

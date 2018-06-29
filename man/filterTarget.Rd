@@ -78,7 +78,8 @@ target<-data.frame(chr = c("2","4","12","17","21","X"),
                    start = c(25469500,106196950,12046280,7579470,36164400,15838363),
                    end = c(25469510,106196960,12046350,7579475,36164410,15838366))
 caller_folder <- system.file("extdata", package = "appreci8R")
+\donttest{
 targetFiltered<-filterTarget(output_folder, "GATK", caller_folder,
                              ".rawMutations", ".vcf", TRUE, "", "",
                              targetRegions = target)
-}
+}}

@@ -61,5 +61,6 @@ sample2<-data.frame(SampleID = c("Sample2","Sample2","Sample2","sample2"),
                     Ref = c("A","C","A","GGG"),
                     Alt = c("G","+AAAG","G","TGG"))
 input<-list(sample1, sample2)
+\donttest{
 normalized<-normalize("", "", input, TRUE, TRUE)
-}
+}}

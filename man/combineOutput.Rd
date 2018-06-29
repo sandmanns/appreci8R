@@ -55,5 +55,6 @@ varscan<-gatk[2,]
 annotated<-list()
 annotated[[1]]<-gatk
 annotated[[2]]<-varscan
+\donttest{
 combined<-combineOutput("", c("GATK","VarScan"), annotated)
-}
+}}

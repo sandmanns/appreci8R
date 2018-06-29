@@ -72,7 +72,8 @@ combined<-data.frame(SampleID = c("Sample2","Sample1"), Chr = c("4","X"),
                      GeneID = c("54790,54790","8233"),
                      TranscriptID = c("18308,18309","75467"),
                      GATK = c(1,1), VarScan = c(NA,1), stringsAsFactors = FALSE)
-bam_folder <- system.file("extdata/", package = "appreci8R")
+bam_folder <- system.file("extdata", package = "appreci8R")
+bam_folder <- paste(bam_folder, "/", sep="")
 \donttest{
 filtered<-evaluateCovAndBQ("", combined, bam_folder)
 }
