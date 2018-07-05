@@ -4,7 +4,7 @@
 Normalize calls
 }
 \description{
-\bold{appreci8R} combines and filters the output of different variant calling tools according to the 'appreci8'-algorithm. In the 2nd analysis step, all calls are normalized with respect to reporting indels, MNVs, reporting of several alternate alleles and reporting of complex indels. A data.frame with all normalized calls is returned.
+\bold{appreci8R} combines and filters the output of different variant calling tools according to the 'appreci8'-algorithm. In the 2nd analysis step, all calls are normalized with respect to reporting indels, MNVs, reporting of several alternate alleles and reporting of complex indels. A GRanges object with all normalized calls is returned.
 }
 \usage{
 normalize(output_folder, caller_name, target_calls, caller_indels_pm,
@@ -39,9 +39,9 @@ The function \code{normalize} covers two to four normalization steps:
 4) Convert MNVs: If MNVs are reported, these are converted. This enables evaluation of the output of different callers if not all callers report all mutations being part of an MNV. A call like CA > GT is split up to a C > G and an A > T variant. But also a call like CGAG > TGAT is split up to C > T and G > T (G > G and A > A are not reported as they do not pass the normalization step ``Find string differences''). This normalization step is only performed if \code{caller_mnvs} is \code{TRUE}.
 }
 \value{
-A data.frame is returned (SampleID, Chr, Pos, Ref, Alt).
+A GRanges object is returned (metadata columns: SampleID, Ref, Alt).
 
-If an output folder is provided, the data.frame is saved as <caller_name>.normalized.txt.
+If an output folder is provided, the output is saved as <caller_name>.normalized.txt.
 }
 \author{
 Sarah Sandmann <sarah.sandmann@uni-muenster.de>

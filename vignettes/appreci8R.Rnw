@@ -43,7 +43,7 @@ The package can be downloaded and installed with
 \medskip
 
 <<2installing,eval=FALSE>>=
-biocLite("appreci8R")
+BiocManager::install("appreci8R")
 @
 
 After installation, the package can be loaded into R by typing
@@ -77,7 +77,7 @@ The function \texttt{filterTarget} covers two steps: reading input and target fi
   \item \texttt{caller\_pos} Column of the variant calling input containing information on pos (default: 2).
   \item \texttt{caller\_ref} Column of the variant calling input containing information on ref (default: 4).
   \item \texttt{caller\_alt} Column of the variant calling input containing information on alt (default: 5).
-  \item \texttt{targetRegions} Data.frame object containing the target regions to be analyzed (bed-format: 1st column chr, 2nd column 0-based start pos, 3rd column 1-based end pos).
+  \item \texttt{targetRegions} Data.frame object containing the target regions to be analyzed (bed-format: 1st column chr, 2nd column 0-based start pos, 3rd column 1-based end pos). Or: GRanges object containing the target regions to be analyzed.
 \end{itemize}
 
 First, all files in \texttt{caller\_folder} of the file type \texttt{caller\_file\_type} with the suffix \texttt{caller\_file\_names\_add} are read. Sample names are automatically derived from the file names (e.g. a sample name would be called "Sample1" if a file was called "Sample1.txt" and no suffix was defined; a sample would be called "Sample1.mutations" if a file was called "Sample1.mutations.vcf" and no suffix was defined, but "Sample1" if the suffix ".mutations" was defined).
@@ -130,7 +130,7 @@ The function \texttt{normalize} covers two to four normalization steps:
 \item Convert MNVs: If MNVs are reported, these are converted. This enables evaluation of the output of different callers if not all callers report all mutations being part of an MNV. A call like CA $>$ GT is split up to a C $>$ G and an A $>$ T variant. But also a call like CGAG $>$ TGAT is split up to C $>$ T and G $>$ T (G $>$ G and A $>$ A are not reported as they do not pass the normalization step ``Find string differences''). This normalization step is only performed if \texttt{caller\_mnvs} is \texttt{TRUE}.
 \end{enumerate}
 
-A data.frame with all normalized calls is returned (SampleID, Chr, Pos, Ref, Alt). If an output folder is provided, the data.frame is saved as <caller\_name>.normalized.txt.
+A GRanges object with all normalized calls is returned (metadata columns: SampleID, Ref, Alt). If an output folder is provided, the output is saved as <caller\_name>.normalized.txt.
 
 Exemplary normalization of a set of raw calls:
 
@@ -162,32 +162,34 @@ normalized
 
 In the 3rd analysis step, all calls are annotated (using VariantAnnotation) and filtered according to the selected locations and consequences of interest.
 
-The function \texttt{annotate} performs annotations of all variants in the input data.frame (according to VariantAnnotation \cite{va}) and filteres the annotated calls with respect to the selected locations and consequences of interest (based on the functions \texttt{locateVariants} and \texttt{predictCoding} of the package VariantAnnotation). At least one location of interest has to be chosen. If - among others - ``coding'' is selected, at least one consequence of interest has to be chosen as well. Avilable input arguments are:
+The function \texttt{annotate} performs annotations of all variants in the input GRanges object (according to VariantAnnotation \cite{va}) and filteres the annotated calls with respect to the selected locations and consequences of interest (based on the functions \texttt{locateVariants} and \texttt{predictCoding} of the package VariantAnnotation). At least one location of interest has to be chosen. If - among others - ``coding'' is selected, at least one consequence of interest has to be chosen as well. Avilable input arguments are:
 
 \begin{itemize}
 \item \texttt{output\_folder} The folder to write the output files into. If an empty string is provided, no files are written out.
   \item \texttt{caller\_name} Name of the variant calling tool (only necessary if an output folder is provided).
-  \item \texttt{normalized\_calls} A data.frame object. One normalized variant call per line. Necessary columns are: SampleID, Chr, Pos, Ref, Alt. Normalize()-output can directly be taken as input.
+  \item \texttt{normalized\_calls} A GRanges object. One normalized variant call per line. Necessary metadata columns are: SampleID, Ref, Alt. Normalize()-output can directly be taken as input.
   \item \texttt{locations} A vector containing the locations of interest. Accepted values are: coding, intron, threeUTR, fiveUTR, intergenic, spliceSite, promoter.
   \item \texttt{consequences} A vector containing the consequences of interest. Accepted values are: synonymous, nonsynonymous, frameshift, nonsense, not translated.
 \end{itemize}
 
 All possible transcripts are investigated. If ``coding'' is chosen and a variant is annotated as ``coding'' in only 1 out of many transcripts, the matching transcript is, together with the annotation information, reported. All the other non-matching transcripts are not reported.
 
-A data.frame is returned containing only the calls at the selected locations of interest and with the selected consequences of interest. Reported columns are: SampleID, Chr, Pos, Ref, Alt, Location, c. (position of variant on cDNA level), p. (position of variant on protein level), AA\_ref, AA\_alt, Codon\_ref, Codon\_alt, Consequence, Gene, GeneID, TranscriptID. TxDb.Hsapiens.UCSC.hg19.knownGene is used for annotation. Whenever there is more than one transcriptID, all of them are reported, separated by commas. The first transcriptID matches the first entry under Location, c., p. etc.
+A GRanges object is returned containing only the calls at the selected locations of interest and with the selected consequences of interest. Reported metadata columns are: SampleID, Ref, Alt, Location, c. (position of variant on cDNA level), p. (position of variant on protein level), AA\_ref, AA\_alt, Codon\_ref, Codon\_alt, Consequence, Gene, GeneID, TranscriptID. TxDb.Hsapiens.UCSC.hg19.knownGene is used for annotation. Whenever there is more than one transcriptID, all of them are reported, separated by commas. The first transcriptID matches the first entry under Location, c., p. etc.
 
-If an output folder is provided, the data.frame is saved as <caller\_name>.annotated.txt.
+If an output folder is provided, the output is saved as <caller\_name>.annotated.txt.
 
 Exemplary annotation of a set of normalized calls:
 
 <<6>>=
+library(GenomicRanges)
 output_folder <- ""
 caller_name <- ""
-input <- data.frame(SampleID = c("Sample1","Sample1","Sample2","Sample2"),
-                    Chr =c("2","X","4","21"),
-                    Pos = c (25469504,15838366,106196951,36164405),
-                    Ref = c("G","C","A","G"),
-                    Alt = c("T","A","G","T"), stringsAsFactors=FALSE)
+input <- GRanges(seqnames = c("2","X","4","21"),
+                 ranges = IRanges(start = c (25469504,15838366,106196951,36164405),
+                                  end = c (25469504,15838366,106196951,36164405)),
+                 SampleID = c("Sample1","Sample1","Sample2","Sample2"),
+                 Ref = c("G","C","A","G"),
+                 Alt = c("T","A","G","T"))
 #Input:
 input
 
@@ -210,10 +212,10 @@ The function \texttt{combineOutput} performs a combination of the normalized and
 \begin{itemize}
   \item \texttt{output\_folder} The folder to write the output files into. If an empty string is provided, no files are written out.
   \item \texttt{caller\_names} Vector containing the name of the variant calling tools.
-  \item \texttt{annotated\_calls} A list of data.frames. Every list element contains the variant calls of one variant calling tool. Annotate()-output can directly be taken as input. Providing a list with only one list element, i.e. evaluating only one variant calling tool, is possible, but not assumed to be useful. The point of the appreci8-algorithm lies in the combined evaluation and filtration of the output of several variant calling tools.
+  \item \texttt{annotated\_calls} A GRangesList object. Every list element contains the variant calls of one variant calling tool. Annotate()-output can directly be taken as input. Providing a list with only one list element, i.e. evaluating only one variant calling tool, is possible, but not assumed to be useful. The point of the appreci8-algorithm lies in the combined evaluation and filtration of the output of several variant calling tools.
 \end{itemize}
 
-A data.frame is returned containing all combined calls. Reported columns are: SampleID, Chr, Pos, Ref, Alt, Location, c. (position of variant on cDNA level), p. (position of variant on protein level), AA\_ref, AA\_alt, Codon\_ref, Codon\_alt, Consequence, Gene, GeneID, TranscriptID. In addition, one column for every variant calling tool is reported, containing a ``1'' for every call detected by that tool and ``NA'' for every call not detected by that tool. If an output folder is provided, the data.frame is saved as Results\_Raw.txt.
+A GRanges object is returned containing all combined calls. Reported metadata columns are: SampleID, Ref, Alt, Location, c. (position of variant on cDNA level), p. (position of variant on protein level), AA\_ref, AA\_alt, Codon\_ref, Codon\_alt, Consequence, Gene, GeneID, TranscriptID. In addition, one column for every variant calling tool is reported, containing a ``1'' for every call detected by that tool and ``NA'' for every call not detected by that tool. If an output folder is provided, the output is saved as Results\_Raw.txt.
 
 Exemplary combination of a set of annotated calls:
 
@@ -224,7 +226,7 @@ caller_name <- ""
 #Input:
 gatk <- annotated[c(1,3),]
 varscan <- annotated[c(2,3),]
-annotated<-list()
+annotated<-GRangesList()
 annotated[[1]]<-gatk
 annotated[[2]]<-varscan
 annotated
@@ -241,7 +243,7 @@ The function \texttt{evaluateCovAndBQ} evaluates coverage and base quality of al
 
 \begin{itemize}
   \item \texttt{output\_folder} The folder to write the output files into. If an empty string is provided, no files are written out.
-  \item \texttt{combined\_calls} A data.frame; necessary input object. The data.frame contains one call per line. CombineOutput()-output can directly be taken as input.
+  \item \texttt{combined\_calls} A GRanges object; necessary input object. The GRanges object contains one call per line. CombineOutput()-output can directly be taken as input.
   \item \texttt{bam\_folder} The folder containing the bam- and bai-files for every sample. The file names have to match the sample names, i.e. Sample1.bam and Sample1.bai if Sample1.vcf (without any defined suffixes) was analyzed for caller1.
   \item \texttt{dp} Minimum depth that is required for a call to pass the filter (default: 50).
   \item \texttt{nr\_alt} Minimum number of reads carrying the alternate allele that is required for a call to pass the filter (default: 20).
@@ -256,7 +258,7 @@ To evaluate base quality, the threshold for \texttt{min\_base\_quality} is succe
 
 Coverage is reported with respect to the forward- and reverse reads separately. It is not yet evaluated. This is done in the 7th analysis step (\texttt{finalFiltration}).
 
-A data.frame is returned containing all calls with sufficient coverage and base quality.  Reported columns are: SampleID, Chr, Pos, Ref, Alt, Location, c. (position of variant on cDNA level), p. (position of variant on protein level), AA\_ref, AA\_alt, Codon\_ref, Codon\_alt, Consequence, Gene, GeneID, TranscriptID, Caller1 to CallerX (dependent on the number of callers that is evaluated), Nr\_Ref, Nr\_Alt, DP, VAF, BQ\_REF, BQ\_ALT, Nr\_Ref\_fwd, Nr\_Alt\_fwd, DP\_fwd, VAF\_rev, Nr\_Ref\_rev, Nr\_Alt\_rev, DP\_rev, VAF\_rev. If an output folder is provided, the data.frame is saved as Results\_Frequency.txt.
+A GRanges object is returned containing all calls with sufficient coverage and base quality. Reported metadata columns are: SampleID, Ref, Alt, Location, c. (position of variant on cDNA level), p. (position of variant on protein level), AA\_ref, AA\_alt, Codon\_ref, Codon\_alt, Consequence, Gene, GeneID, TranscriptID, Caller1 to CallerX (dependent on the number of callers that is evaluated), Nr\_Ref, Nr\_Alt, DP, VAF, BQ\_REF, BQ\_ALT, Nr\_Ref\_fwd, Nr\_Alt\_fwd, DP\_fwd, VAF\_rev, Nr\_Ref\_rev, Nr\_Alt\_rev, DP\_rev, VAF\_rev. If an output folder is provided, the output is saved as Results\_Frequency.txt.
 
 Exemplary filtration of a set of combined calls:
 
@@ -281,7 +283,7 @@ The function \texttt{evaluateCharacteristics} determines an extended set of char
 
 \begin{itemize}
   \item \texttt{output\_folder} The folder to write the output files into. If an empty string is provided, no files are written out.
-  \item \texttt{frequency\_calls} A data.frame object. The data.frame contains one call per line. EvaluateCovAndBQ()-output can directly be taken as input.
+  \item \texttt{frequency\_calls} A GRanges object. The GRanges object contains one call per line. EvaluateCovAndBQ()-output can directly be taken as input.
   \item \texttt{predict} String defining the prediction tool to use (accepted strings are: SIFT, Provean, PolyPhen2)
   \item \texttt{dbSNP} Query dbSNP (144.GRCh37) for the presence of your variants (\texttt{TRUE} or \texttt{FALSE}; default \texttt{TRUE}).
   \item \texttt{'1kgenomes'} Query 1000 Genomes (phase3) for the presence of your variants (\texttt{TRUE} or \texttt{FALSE}; default \texttt{TRUE}).
@@ -296,7 +298,7 @@ First, the database check-up is performed. At a maximum, dbSNP, 1000Genomes, ExA
 
 Second, the impact perdiction on protein level is performed. Impact can be predicted using either SIFT, Provean or PolyPhen2. In any case, the prediction is performed on the basis of rs-IDs. For every call, the predicted effect as well as the score is reported.
 
-A data.frame is returned containing all calls, information on their presence in the selected databases and information on the predicted effect.  Reported columns are (if all databases are selected): SampleID, Chr, Pos, Ref, Alt, dbSNP (containing the rs-ID), dbSNP\_MAF, G1000\_AF, ExAC\_AF, ESP6500\_AF, GAD\_AF, CosmicID, Cosmic\_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A>G, then c.complement is c.5284T>C), p. (variant on protein level containing position and amino acids). If an output folder is provided, the data.frame is saved as Results\_Databases.txt.
+A GRanges Object is returned containing all calls, information on their presence in the selected databases and information on the predicted effect. Reported metadata columns are (if all databases are selected): SampleID, Ref, Alt, dbSNP (containing the rs-ID), dbSNP\_MAF, G1000\_AF, ExAC\_AF, ESP6500\_AF, GAD\_AF, CosmicID, Cosmic\_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A$>$G, then c.complement is c.5284T$>$C), p. (variant on protein level containing position and amino acids).
 
 Exemplary characteristics of a set of filtered calls:
 
@@ -319,9 +321,9 @@ The function \texttt{finalFiltration} performs the final filtration according to
 
 \begin{itemize}
   \item \texttt{output\_folder} The folder to write the output files into. If an empty string is provided, no files are written out.
-  \item \texttt{frequency\_calls} A data.frame object. The data.frame contains one call per line. EvaluateCovAndBQ()-output can directly be taken as input.
-  \item \texttt{database\_calls} A data.frame object. The data.frame contains one call per line. EvaluateCharacteristics()-output can directly be taken as input.
-  \item \texttt{combined\_calls} A data.frame object. The data.frame contains one call per line. CombineOutput()-output can directly be taken as input.
+  \item \texttt{frequency\_calls} A GRanges object. The GRanges object contains one call per line. EvaluateCovAndBQ()-output can directly be taken as input.
+  \item \texttt{database\_calls} A GRanges object. The GRanges object contains one call per line. EvaluateCharacteristics()-output can directly be taken as input.
+  \item \texttt{combined\_calls} A GRanges object. The GRanges object contains one call per line. CombineOutput()-output can directly be taken as input.
   \item \texttt{damaging\_safe} Threshold for the impact prediction score, identifying reliably damaging calls. For example, if Provean has been selected as the impact prediction tool, the internal threshold of the tool is -2.5. However, calls with a score of -2.51 are less likely to have a correct ``Damaging'' prediction compared to calls with a score of -12.0. A threshold of -5.0 for \texttt{damaging\_safe} marks all calls with a score below -5.0 as reliably damaging.
   \item \texttt{tolerated\_safe} Threshold for the impact prediction score, identifying reliably tolerated calls. For example, if Provean has been selected as the impact prediction tool, the internal threshold of the tool is -2.5. However, calls with a score of -2.49 are less likely to have a correct ``Neutral'' prediction compared to calls with a score of +7.0. A threshold of -1.0 for \texttt{tolerated\_safe} marks all calls with a score above -1.0 as reliably tolerated.
   \item \texttt{primer} Optional: Data.frame containing primer positions in bed-format, i.e. 1st column chromosome, 2nd column 0-based start position, 3rd column 1-based end position (default: NA).
@@ -400,9 +402,9 @@ Final filtration consists of several steps:
 \end{enumerate}
 
 
-A data.frame is returned containing all calls with a predicted category. Categories can be: probably true, hotspot, polymorphism or artifact. Reported columns are: SampleID, Chr, Pos, Ref, Alt, Gene, GeneID, TranscriptID, Location, Consequence, c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A>G, then c.complement is c.5284T>C), p. (variant on protein level containing position and amino acids), Codon\_ref, Codon\_alt, Nr\_Ref, Nr\_Alt, DP, VAF, Caller1 to CallerX (dependent on the number of callers that is evaluated), dbSNP (containing the rs-ID), dbSNP\_MAF, G1000\_AF, ExAC\_AF, ESP6500\_AF, GAD\_AF, CosmicID, Cosmic\_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), BQ\_REF, BQ\_ALT, Nr\_Ref\_fwd, Nr\_Alt\_fwd, DP\_fwd, VAF\_rev, Nr\_Ref\_rev, Nr\_Alt\_rev, DP\_rev, VAF\_rev, strandbias, nr\_samples (number of samples with the same variant), nr\_samples\_similar (number of samples with a variant at the same position), Category.
+A GRanges object is returned containing all calls with a predicted category. Categories can be: probably true, hotspot, polymorphism or artifact. Reported metadata columns are: SampleID, Ref, Alt, Gene, GeneID, TranscriptID, Location, Consequence, c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A>G, then c.complement is c.5284T>C), p. (variant on protein level containing position and amino acids), Codon\_ref, Codon\_alt, Nr\_Ref, Nr\_Alt, DP, VAF, Caller1 to CallerX (dependent on the number of callers that is evaluated), dbSNP (containing the rs-ID), dbSNP\_MAF, G1000\_AF, ExAC\_AF, ESP6500\_AF, GAD\_AF, CosmicID, Cosmic\_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), BQ\_REF, BQ\_ALT, Nr\_Ref\_fwd, Nr\_Alt\_fwd, DP\_fwd, VAF\_rev, Nr\_Ref\_rev, Nr\_Alt\_rev, DP\_rev, VAF\_rev, strandbias, nr\_samples (number of samples with the same variant), nr\_samples\_similar (number of samples with a variant at the same position), Category.
 
-If an output folder is provided, the data.frame is saved as Results\_Final.txt. Additionally, Results\_Final.xlsx is saved, containing three sheets: Mutations, Polymorphisms and Artifacts.
+If an output folder is provided, the output is saved as Results\_Final.txt. Additionally, Results\_Final.xlsx is saved, containing three sheets: Mutations, Polymorphisms and Artifacts.
 
 <<10>>=
 output_folder <- ""

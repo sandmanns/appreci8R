@@ -4,10 +4,10 @@
 Perform final filtration according to the appreci8-algorithm
 }
 \description{
-\bold{appreci8R} combines and filters the output of different variant calling tools according to the 'appreci8'-algorithm. In the 7th analysis step, the final filtration according to the appreci8-algorithm is performed. A data.frame with all calls and their categorization as ``Probably true'', ``Polymorphism'' or ``Artifact'' is reported.
+\bold{appreci8R} combines and filters the output of different variant calling tools according to the 'appreci8'-algorithm. In the 7th analysis step, the final filtration according to the appreci8-algorithm is performed. A GRanges object with all calls and their categorization as ``Probably true'', ``Polymorphism'' or ``Artifact'' is reported.
 }
 \usage{
-finalFiltration(output_folder, frequency_calls, database_calls, combined_calls,
+finalFiltration(output_folder, frequency_calls_g, database_calls_g, combined_calls_g,
                 damaging_safe, tolerated_safe, primer = NA, hotspots = NA,
                 overlapTools, nrsamples = 3, dp = 50, nr_alt = 20, vaf = 0.01,
                 bq = 15, bq_diff = 7, detectedLow = 2, detectedHigh = 2,
@@ -33,14 +33,14 @@ finalFiltration(output_folder, frequency_calls, database_calls, combined_calls,
   \item{output_folder}{
 The folder to write the output files into. If an empty string is provided, no files are written out.
 }
-  \item{frequency_calls}{
-A data.frame object. The data.frame contains one call per line. EvaluateCovAndBQ()-output can directly be taken as input.
+  \item{frequency_calls_g}{
+A GRanges object. The GRanges object contains one call per line. EvaluateCovAndBQ()-output can directly be taken as input.
 }
-  \item{database_calls}{
-A data.frame object. The data.frame contains one call per line. EvaluateCharacteristics()-output can directly be taken as input.
+  \item{database_calls_g}{
+A GRanges object. The GRanges object contains one call per line. EvaluateCharacteristics()-output can directly be taken as input.
 }
-  \item{combined_calls}{
-A data.frame object. The data.frame contains one call per line. CombineOutput()-output can directly be taken as input.
+  \item{combined_calls_g}{
+A GRanges object. The GRanges object contains one call per line. CombineOutput()-output can directly be taken as input.
 }
   \item{damaging_safe}{
 Threshold for the impact prediction score, identifying reliably damaging calls. For example, if Provean has been selected as the impact prediction tool, the internal threshold of the tool is -2.5. However, calls with a score of -2.51 are less likely to have a correct ``Damaging'' prediction compared to calls with a score of -12.0. A threshold of -5.0 for \code{damaging_safe} marks all calls with a score below -5.0 as reliably damaging.
@@ -247,9 +247,9 @@ The function \code{finalFiltration} performs the final filtration according to t
 10) Final filtration is performed. The artifact- and the polymorphism score are calculated. On the basis of these two scores, a call is either classified as a probably true/hotspot call, polymorphism or artifact.
 }
 \value{
-A data.frame is returned containing all calls with a predicted category. Categories can be: probably true, hotspot, polymorphism or artifact. Reported columns are: SampleID, Chr, Pos, Ref, Alt, Gene, GeneID, TranscriptID, Location, Consequence, c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A>G, then c.complement is c.5284T>C), p. (variant on protein level containing position and amino acids), Codon_ref, Codon_alt, Nr_Ref, Nr_Alt, DP, VAF, Caller1 to CallerX (dependent on the number of callers that is evaluated), dbSNP (containing the rs-ID), dbSNP_MAF, G1000_AF, ExAC_AF, ESP6500_AF, GAD_AF, CosmicID, Cosmic_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), BQ_REF, BQ_ALT, Nr_Ref_fwd, Nr_Alt_fwd, DP_fwd, VAF_rev, Nr_Ref_rev, Nr_Alt_rev, DP_rev, VAF_rev, strandbias, nr_samples (number of samples with the same variant), nr_samples_similar (number of samples with a variant at the same position), Category.
+A GRanges object is returned containing all calls with a predicted category. Categories can be: probably true, hotspot, polymorphism or artifact. Reported metadata columns are: SampleID, Ref, Alt, Gene, GeneID, TranscriptID, Location, Consequence, c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A>G, then c.complement is c.5284T>C), p. (variant on protein level containing position and amino acids), Codon_ref, Codon_alt, Nr_Ref, Nr_Alt, DP, VAF, Caller1 to CallerX (dependent on the number of callers that is evaluated), dbSNP (containing the rs-ID), dbSNP_MAF, G1000_AF, ExAC_AF, ESP6500_AF, GAD_AF, CosmicID, Cosmic_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), BQ_REF, BQ_ALT, Nr_Ref_fwd, Nr_Alt_fwd, DP_fwd, VAF_rev, Nr_Ref_rev, Nr_Alt_rev, DP_rev, VAF_rev, strandbias, nr_samples (number of samples with the same variant), nr_samples_similar (number of samples with a variant at the same position), Category.
 
-If an output folder is provided, the data.frame is saved as Results_Final.txt. Additionally, Results_Final.xlsx is saved, containing three sheets: Mutations, Polymorphisms and Artifacts.
+If an output folder is provided, the output is saved as Results_Final.txt. Additionally, Results_Final.xlsx is saved, containing three sheets: Mutations, Polymorphisms and Artifacts.
 }
 \author{
 Sarah Sandmann <sarah.sandmann@uni-muenster.de>
@@ -258,41 +258,55 @@ Sarah Sandmann <sarah.sandmann@uni-muenster.de>
 \code{\link{appreci8R}}, \code{\link{appreci8Rshiny}}, \code{\link{filterTarget}}, \code{\link{normalize}}, \code{\link{annotate}}, \code{\link{combineOutput}}, \code{\link{evaluateCovAndBQ}}, \code{\link{determineCharacteristics}}
 }
 \examples{
-filtered<-data.frame(SampleID = c("Sample2","Sample1"), Chr = c("4","X"),
-                     Pos = c(106196951,15838366), Ref = c("A","C"),
-                     Alt = c("G","A"), Location = c("coding,coding","coding"),
-                     c. = c("5284,5347","864"), p. = c("1762,1783","288"),
-                     AA_ref = c("I,I","N"), AA_alt = c("V,V","K"),
-                     Codon_ref = c("ATA,ATA","AAC"),
-                     Codon_alt = c("GTA,GTA","AAA"),
-                     Consequence = c("nonsynonymous,nonsynonymous","nonsynonymous"),
-                     Gene = c("TET2,TET2","ZRSR2"),
-                     GeneID = c("54790,54790","8233"),
-                     TranscriptID = c("18308,18309","75467"),
-                     GATK = c(NA,1), VarScan = c(1,NA), Nr_Ref = c(1268,1991),
-                     Nr_Alt = c(1283,31), DP = c(2551,3630),
-                     VAF = c(0.5029,0.0085), BQ_REF = c(38.67,37.46),
-                     BQ_ALT = c(38.81,18.00), Nr_Ref_fwd = c(428,839),
-                     Nr_Alt_fwd = c(469,0), DP_fwd = c(897,1507),
-                     VAF_fwd = c(0.5229,0.0000), Nr_Ref_rev = c(840,1152),
-                     Nr_Alt_rev = c(814,31), DP_rev = c(1654,2123),
-                     VAF_rev = c(0.4921,0.0146), stringsAsFactors = FALSE)
-databases<-cbind(filtered[,1:5],data.frame(dbSNP = c("rs2454206",NA),
-                                           dbSNP_MAF = c(0.2304,NA),
-                                           G1000_AF = c(0.23,0.44),
-                                           ExAC_AF = c(0.27,0.47),
-                                           ESP6500_AF = c(0.29,0.49),
-                                           GAD_AF = c(0.30,0.47),
-                                           CosmicID = c(NA,NA),
-                                           Cosmic_Counts = c(NA,NA),
-                                           ClinVar = c(NA,NA),
-                                           Prediction = c("Neutral",NA),
-                                           Score = c(-0.061,NA),
-                                           c. = c("c.5284A>G,c.5347A>G","c.864C>A"),
-                                           c.complement = c("c.5284T>C,c.5347T>C","c.864G>T"),
-                                           p. = c("p.I1762V,p.I1783V","p.N288K"),
-                                           stringsAsFactors = FALSE))
-combined=filtered[,1:18]
+library("GenomicRanges")
+filtered<-GRanges(seqnames = c("4","X"),
+                  ranges = IRanges(start = c (106196951,15838366),
+                                   end = c (106196951,15838366)),
+                  SampleID = c("Sample2","Sample1"), Ref = c("A","C"),
+                  Alt = c("G","A"), Location = c("coding,coding","coding"),
+                  c. = c("5284,5347","864"), p. = c("1762,1783","288"),
+                  AA_ref = c("I,I","N"), AA_alt = c("V,V","K"),
+                  Codon_ref = c("ATA,ATA","AAC"),
+                  Codon_alt = c("GTA,GTA","AAA"),
+                  Consequence = c("nonsynonymous,nonsynonymous","nonsynonymous"),
+                  Gene = c("TET2,TET2","ZRSR2"),
+                  GeneID = c("54790,54790","8233"),
+                  TranscriptID = c("18308,18309","75467"),
+                  GATK = c(NA,1), VarScan = c(1,NA), Nr_Ref = c(1268,1991),
+                  Nr_Alt = c(1283,31), DP = c(2551,3630),
+                  VAF = c(0.5029,0.0085), BQ_REF = c(38.67,37.46),
+                  BQ_ALT = c(38.81,18.00), Nr_Ref_fwd = c(428,839),
+                  Nr_Alt_fwd = c(469,0), DP_fwd = c(897,1507),
+                  VAF_fwd = c(0.5229,0.0000), Nr_Ref_rev = c(840,1152),
+                  Nr_Alt_rev = c(814,31), DP_rev = c(1654,2123),
+                  VAF_rev = c(0.4921,0.0146))
+databases<-GRanges(seqnames = c("4","X"),
+                  ranges = IRanges(start = c (106196951,15838366),
+                                   end = c (106196951,15838366)),
+                  SampleID = c("Sample2","Sample1"), Ref = c("A","C"),
+                  Alt = c("G","A"),dbSNP = c("rs2454206",NA),
+                  dbSNP_MAF = c(0.2304,NA), G1000_AF = c(0.23,0.44),
+                  ExAC_AF = c(0.27,0.47), ESP6500_AF = c(0.29,0.49),
+                  GAD_AF = c(0.30,0.47), CosmicID = c(NA,NA),
+                  Cosmic_Counts = c(NA,NA), ClinVar = c(NA,NA),
+                  Prediction = c("Neutral",NA), Score = c(-0.061,NA),
+                  c. = c("c.5284A>G,c.5347A>G","c.864C>A"),
+                  c.complement = c("c.5284T>C,c.5347T>C","c.864G>T"),
+                  p. = c("p.I1762V,p.I1783V","p.N288K"))
+filtered<-GRanges(seqnames = c("4","X"),
+                  ranges = IRanges(start = c (106196951,15838366),
+                                   end = c (106196951,15838366)),
+                  SampleID = c("Sample2","Sample1"), Ref = c("A","C"),
+                  Alt = c("G","A"), Location = c("coding,coding","coding"),
+                  c. = c("5284,5347","864"), p. = c("1762,1783","288"),
+                  AA_ref = c("I,I","N"), AA_alt = c("V,V","K"),
+                  Codon_ref = c("ATA,ATA","AAC"),
+                  Codon_alt = c("GTA,GTA","AAA"),
+                  Consequence = c("nonsynonymous,nonsynonymous","nonsynonymous"),
+                  Gene = c("TET2,TET2","ZRSR2"),
+                  GeneID = c("54790,54790","8233"),
+                  TranscriptID = c("18308,18309","75467"),
+                  GATK = c(NA,1), VarScan = c(1,NA))
 
 \donttest{
 final<-finalFiltration("", frequency_calls = filtered,

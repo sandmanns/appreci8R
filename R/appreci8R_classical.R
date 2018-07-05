@@ -28,17 +28,23 @@ filterTarget <- function(output_folder,caller_name,caller_folder,
 
     #1. Target filtration
     message("1. Target filtration")
-    if(sum(is.na(targetRegions))>0){
+    if((is.data.frame(targetRegions)==TRUE&&sum(is.na(targetRegions))>0)
+       ||(is.data.frame(targetRegions)==FALSE&&length(targetRegions)==0)){
         message("Please provide a target regions file")
         return()
     }
-    if(sum(is.na(targetRegions))==0){
+    if((is.data.frame(targetRegions)==TRUE&&sum(is.na(targetRegions))==0)
+       ||(is.data.frame(targetRegions)==FALSE&&length(targetRegions)>0)){
+        if(is.data.frame(targetRegions)==FALSE){
+            temp<-as.data.frame(targetRegions)
+            targetRegions<-temp
+        }
         target_calls<-list()
-        for(i in 1:length(raw_calls)){
+        for(i in seq_along(raw_calls)){
             if(length(raw_calls[[i]])>0){
                 if(!is.na(raw_calls[[i]][1,2])){
                     include<-rep(FALSE,length(raw_calls[[i]][,1]))
-                    for(k in 1:length(raw_calls[[i]][,1])){
+                    for(k in seq_along(raw_calls[[i]][,1])){
                         flag1<-as.character(raw_calls[[i]][k,2])==as.character(targetRegions[,1])
                         flag2<-raw_calls[[i]][k,3]>targetRegions[,2]
                         flag3<-raw_calls[[i]][k,3]<=targetRegions[,3]
@@ -113,17 +119,19 @@ normalize <- function(output_folder,caller_name,target_calls,caller_indels_pm,
                         row.names=FALSE,quote=FALSE,sep="\t")
         }
     }
-    return(normalized_calls)
+    normalized_calls_g<-exportAsGRanges(normalized_calls)
+    return(normalized_calls_g)
 }
 
 #Perform 3rd analysis step - Annotate
-annotate <- function(output_folder,caller_name,normalized_calls,locations,
+annotate <- function(output_folder,caller_name,normalized_calls_g,locations,
                      consequences) {
     #check if output folder really exists
     if(output_folder!=""&&file.exists(output_folder)==FALSE){
         message("Your output folder does not exist")
         return()
     }
+    normalized_calls<-importAsDataFrame(normalized_calls_g)
 
     #3. Annotate
     message("3. Annotate")
@@ -146,7 +154,7 @@ annotate <- function(output_folder,caller_name,normalized_calls,locations,
         }
         if(!is.na(locations[1])){
             located<-locateVariants(test,txdb,AllVariants())
-            for(j in 1:length(locations)){
+            for(j in seq_along(locations)){
                 if(j==1){
                     of_interest<-data.frame(located$LOCATION==locations[j])
                 }
@@ -168,7 +176,7 @@ annotate <- function(output_folder,caller_name,normalized_calls,locations,
         }
         if(!is.na(consequences[1])){
             predicted<-predictCoding(query=test,subject=txdb,seqSource=Hsapiens)
-            for(j in 1:length(predicted[,1])){
+            for(j in seq_along(predicted[,1])){
                 if(as.character(predicted$REFCODON[j])=="CTG"){
                     if(as.character(predicted$VARCODON[j])=="ATG"){
                         predicted$CONSEQUENCE[j]<-"nonsynonymous"
@@ -218,7 +226,7 @@ annotate <- function(output_folder,caller_name,normalized_calls,locations,
                     }
                 }
             }
-            for(j in 1:length(consequences)){
+            for(j in seq_along(consequences)){
                 if(j==1){
                     of_interest<-data.frame(predicted$CONSEQUENCE==consequences[j])
                 }
@@ -243,7 +251,7 @@ annotate <- function(output_folder,caller_name,normalized_calls,locations,
         counter_predicted<-1
         keep<-rep(TRUE,length(annotated_calls[,1]))
 
-        for(k in 1:length(annotated_calls[,1])){
+        for(k in seq_along(annotated_calls[,1])){
             if((k%%100)==0){
                 message(k," out of ",length(annotated_calls[,1]))
             }
@@ -264,7 +272,7 @@ annotate <- function(output_folder,caller_name,normalized_calls,locations,
                 counter_located<-counter_located+1
             }
             if(!is.na(annotated_calls[k,6])&&!is.na(consequences)){
-                for(j in 1:length(strsplit(annotated_calls[k,6],",")[[1]])){
+                for(j in seq_along(strsplit(annotated_calls[k,6],",")[[1]])){
                     if(counter_predicted>length(ranges(predicted))||
                        strsplit(annotated_calls[k,6],",")[[1]][j]!="coding"){
                         if(!is.na(annotated_calls[k,8])){
@@ -400,16 +408,21 @@ annotate <- function(output_folder,caller_name,normalized_calls,locations,
                                               ".annotated.txt",sep=""),
                         row.names=FALSE,quote=FALSE,sep="\t")
         }
-        return(annotated_calls)
+        annotated_calls_g<-exportAsGRanges(annotated_calls)
+        return(annotated_calls_g)
     }
 }
 
 #Perform 4th analysis step - Combine
-combineOutput <- function(output_folder,caller_names,annotated_calls) {
+combineOutput <- function(output_folder,caller_names,annotated_calls_g) {
     #check if output folder really exists
     if(output_folder!=""&&file.exists(output_folder)==FALSE){
         message("Your output folder does not exist")
         return()
+    }
+    annotated_calls<-list()
+    for(i in seq_along(annotated_calls_g)){
+        annotated_calls[[i]]<-importAsDataFrame(annotated_calls_g[[i]])
     }
 
     #4. Combine output
@@ -418,7 +431,7 @@ combineOutput <- function(output_folder,caller_names,annotated_calls) {
                                Location=NA,c.=NA,p.=NA,AA_ref=NA,AA_alt=NA,
                                Codon_ref=NA,Codon_alt=NA,Consequence=NA,
                                Gene=NA,GeneID=NA,TranscriptID=NA)
-    for(i in 1:length(annotated_calls)){
+    for(i in seq_along(annotated_calls)){
         combined_calls<-cbind(combined_calls,NA)
     }
     if(is.na(caller_names[1])){
@@ -431,7 +444,7 @@ combineOutput <- function(output_folder,caller_names,annotated_calls) {
     }
 
     combined_calls_temp<-combined_calls
-    for(i in 1:length(annotated_calls)){
+    for(i in seq_along(annotated_calls)){
         if(length(annotated_calls[[i]])>0){
             temp<-annotated_calls[[i]]
             add_to_temp<-matrix(rep(NA,(length(combined_calls[1,])-16)),
@@ -479,17 +492,19 @@ combineOutput <- function(output_folder,caller_names,annotated_calls) {
                                          sep=""),
                     row.names=FALSE,quote=FALSE,sep="\t")
     }
-    return(combined_calls)
+    combined_calls_g<-exportAsGRanges(combined_calls)
+    return(combined_calls_g)
 }
 
 #Perform 5th analysis step - Evaluate Coverage and BQ
-evaluateCovAndBQ <- function(output_folder,combined_calls,bam_folder,
+evaluateCovAndBQ <- function(output_folder,combined_calls_g,bam_folder,
                              dp=50,nr_alt=20,vaf=0.01,bq=15,bq_diff=7) {
     #check if output folder really exists
     if(output_folder!=""&&file.exists(output_folder)==FALSE){
         message("Your output folder does not exist")
         return()
     }
+    combined_calls<-importAsDataFrame(combined_calls_g)
 
     #5. Evaluate Coverage and BQ
     message("5. Evaluate Coverage and BQ")
@@ -498,7 +513,7 @@ evaluateCovAndBQ <- function(output_folder,combined_calls,bam_folder,
                    DP_fwd=NA,VAF_fwd=NA,Nr_Ref_rev=NA,Nr_Alt_rev=NA,
                    DP_rev=NA,VAF_rev=NA)
     folder<-bam_folder
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if((i%%100)==0){
             message("Call ",i," out of ",length(results[,1]))
         }
@@ -691,7 +706,7 @@ evaluateCovAndBQ <- function(output_folder,combined_calls,bam_folder,
     include2<-results[,7]>=nr_alt
     include3<-(results[,9]*100)>=vaf
     include4<-results[,11]>=bq
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if(is.na(results[i,10])){
             results[i,10]<-0
         }
@@ -703,11 +718,12 @@ evaluateCovAndBQ <- function(output_folder,combined_calls,bam_folder,
                     paste(output_folder,"/Results_Frequency.txt",sep=""),
                     row.names=FALSE,quote=FALSE,sep="\t")
     }
-    return(frequency_calls)
+    frequency_calls_g<-exportAsGRanges(frequency_calls)
+    return(frequency_calls_g)
 }
 
 #Perform 6th analysis step - Determine Characteristics
-determineCharacteristics <- function(output_folder,frequency_calls,predict,
+determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
                                      dbSNP=TRUE,`1kgenomes`=TRUE,exacDB=TRUE,
                                      espDB=TRUE,gadDB=TRUE,cosmicDB=TRUE,
                                      clinvarDB=TRUE) {
@@ -716,6 +732,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
         message("Your output folder does not exist")
         return()
     }
+    frequency_calls<-importAsDataFrame(frequency_calls_g)
 
     #6. Determine CharacteristicsEvaluate Coverage and BQ
     message("6. Determine Extended Set of Characteristics (databases)")
@@ -749,22 +766,22 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
         results<-cbind(results,ClinVar=NA)
         clinvar<-data.frame(Gene=NA,Start=NA,Stop=NA,Ref=NA,Alt=NA,Sig=NA)
         genes_temp<-c()
-        for(i in 1:length(frequency_calls[,1])){
+        for(i in seq_along(frequency_calls[,1])){
             genes_temp<-c(genes_temp,
                           strsplit(frequency_calls[i,14],split=",")[[1]])
         }
         genes<-unique(genes_temp[genes_temp!="NA"])
-        for(i in 1:length(genes)){
+        for(i in seq_along(genes)){
             res<-entrez_search("clinvar",term=genes[i])
             cv<-entrez_summary("clinvar",id=res$ids)
             info<-extract_from_esummary(cv,"variation_set",simplify=FALSE)
             significance<-extract_from_esummary(cv,"clinical_significance",
                                                 simplify=FALSE)
-            for(j in 1:length(res$ids)){
+            for(j in seq_along(res$ids)){
                 info2<-info[res$ids[j]][[1]][[1]]
                 significance2<-significance[res$ids[j]][[1]][[1]]
                 if(length(info2$variation_loc[[1]])){
-                    for(k in 1:length(info2$variation_loc[[1]][,1])){
+                    for(k in seq_along(info2$variation_loc[[1]][,1])){
                         if(info2$variation_loc[[1]][k,2]=="GRCh37"){
                             temp<-data.frame(Gene=NA,Start=NA,Stop=NA,Ref=NA,
                                              Alt=NA)
@@ -791,7 +808,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
     c.complement<-c()
     p.<-c()
     message("-> Pre-processing of the calls")
-    for(i in 1:length(frequency_calls[,1])){
+    for(i in seq_along(frequency_calls[,1])){
         for(j in 1:(length(strsplit(frequency_calls[i,7],split=",")[[1]]))){
             if(j==1){
                 c.[i]<-paste("c.",strsplit(frequency_calls[i,7],
@@ -896,7 +913,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
         }
     }
     message("-> Check databases")
-    for(i in 1:length(frequency_calls[,1])){
+    for(i in seq_along(frequency_calls[,1])){
         if((i%%100)==0){
             message("Call ",i," out of ",length(frequency_calls[,1]))
         }
@@ -955,7 +972,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
             if(cosmicDB==TRUE){
                 snp_info<-rowRanges(cosmic_67)[as.character(seqnames(rowRanges(cosmic_67)))==frequency_calls[i,2]&start(ranges(rowRanges(cosmic_67)))==frequency_calls[i,3]]
                 if(length(snp_info)>0){
-                    for(j in 1:length(snp_info[,1])){
+                    for(j in seq_along(snp_info[,1])){
                         if(snp_info$REF==frequency_calls[i,4]&&
                            snp_info$ALT[[1]]==frequency_calls[i,5]||
                            (snp_info$REF==as.character(complement(DNAString(frequency_calls[i,4])))&&
@@ -988,7 +1005,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
             }
             if(clinvarDB==TRUE){
                 snp_info_temp<-data.frame()
-                for(j in 1:length(strsplit(frequency_calls[i,14],split=",")[[1]])){
+                for(j in seq_along(strsplit(frequency_calls[i,14],split=",")[[1]])){
                     if(!is.na(strsplit(frequency_calls[i,14],
                                        split=",")[[1]][j])){
                         temp<-clinvar[grep(strsplit(frequency_calls[i,14],
@@ -1032,7 +1049,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
                 snp_info_rs<-snp_info$RefSNP_id[(start(ranges(snp_info))<=frequency_calls[i,3])&(end(ranges(snp_info))>=(as.numeric(frequency_calls[i,3])+nchar(frequency_calls[i,4])-1))]
                 if(length(snp_info_rs)>0){
                     ncbi<-ncbi_snp_query2(snp_info_rs)[[1]]
-                    for(j in 1:length(ncbi[,1])){
+                    for(j in seq_along(ncbi[,1])){
                         if(nchar(results[i,4])>nchar(results[i,5])){
                             if(length(grep(substr(results[i,4],2,
                                                   nchar(results[i,4])),
@@ -1053,7 +1070,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
             if(cosmicDB==TRUE){
                 snp_info<-rowRanges(cosmic_67)[as.character(seqnames(rowRanges(cosmic_67)))==frequency_calls[i,2]&start(ranges(rowRanges(cosmic_67)))==frequency_calls[i,3]]
                 if(length(snp_info)>0){
-                    for(j in 1:length(snp_info[,1])){
+                    for(j in seq_along(snp_info[,1])){
                         if(snp_info$REF==frequency_calls[i,4]&&
                            snp_info$ALT[[1]]==frequency_calls[i,5]||
                            (snp_info$REF==as.character(complement(DNAString(frequency_calls[i,4])))&&
@@ -1089,7 +1106,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
             }
             if(clinvarDB==TRUE){
                 snp_info_temp<-data.frame()
-                for(j in 1:length(strsplit(frequency_calls[i,14],
+                for(j in seq_along(strsplit(frequency_calls[i,14],
                                            split=",")[[1]])){
                     if(!is.na(strsplit(frequency_calls[i,14],split=",")[[1]][j])){
                         temp<-clinvar[grep(strsplit(frequency_calls[i,14],
@@ -1109,7 +1126,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
                 if(length(snp_info)>0){
                     snp_info2<-snp_info[snp_info[,2]==(as.numeric(frequency_calls[i,3])-1),]
                     if(length(snp_info2[,1])>0){
-                        for(j in 1:length(snp_info2[,1])){
+                        for(j in seq_along(snp_info2[,1])){
                             if(snp_info2[j,4]=="-"&&
                                snp_info2[j,5]==substr(frequency_calls[i,5],2,
                                                       nchar(frequency_calls[i,5]))){
@@ -1145,7 +1162,7 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
             ncbi<-rbind(ncbi,temp)
         }
     }
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if(!is.na(results[i,6])){
             suppressWarnings(results$dbSNP_MAF[i]<-as.numeric(max(ncbi[ncbi[,1]==results[i,6],8])))
             if(sum(ncbi[ncbi[,1]==results[i,6],7]==results[i,4],na.rm=TRUE)>0){
@@ -1219,12 +1236,13 @@ determineCharacteristics <- function(output_folder,frequency_calls,predict,
                     paste(output_folder,"/Results_Databases.txt",sep=""),
                     row.names=FALSE,quote=FALSE,sep="\t")
     }
-    return(database_calls)
+    database_calls_g<-exportAsGRanges(database_calls)
+    return(database_calls_g)
 }
 
 #Perform 7th analysis step - Final Filtration
-finalFiltration <- function(output_folder,frequency_calls,database_calls,
-                            combined_calls,damaging_safe,tolerated_safe,
+finalFiltration <- function(output_folder,frequency_calls_g,database_calls_g,
+                            combined_calls_g,damaging_safe,tolerated_safe,
                             primer=NA,hotspots=NA,overlapTools,nrsamples=3,
                             dp=50,nr_alt=20,vaf=0.01,bq=15,bq_diff=7,
                             detectedLow=2,detectedHigh=2,isIndel=1,isIndelVAF=1,
@@ -1251,6 +1269,9 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
         message("Your output folder does not exist")
         return()
     }
+    frequency_calls<-importAsDataFrame(frequency_calls_g)
+    database_calls<-importAsDataFrame(database_calls_g)
+    combined_calls<-importAsDataFrame(combined_calls_g)
 
     #7. Perform Final Filtration
     message("7. Perform Final Filtration")
@@ -1301,7 +1322,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
 
     #nr of samples
     message("->  Consider samples with the same call")
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if((i%%100)==0){
             message("Call ",i," out of ",length(results[,1]))
         }
@@ -1309,7 +1330,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
     }
 
     message("->  Consider samples with a call at the same position")
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if((i%%100)==0){
             message("Call ",i," out of ",length(results[,1]))
         }
@@ -1351,7 +1372,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
     message("->  Consider nr of databases")
     if(length(database_calls[1,])>10){
         if(length(grep("dbSNP",names(database_calls)))>0){
-            for(i in 1:length(database_calls[,1])){
+            for(i in seq_along(database_calls[,1])){
                 if(!is.na(results$dbSNP[i])){
                     artifact_because[i,3]<-sum(artifact_because[i,3],1,
                                                na.rm=TRUE)
@@ -1369,7 +1390,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
             }
         }
         if(length(grep("G1000_AF",names(database_calls)))>0){
-            for(i in 1:length(database_calls[,1])){
+            for(i in seq_along(database_calls[,1])){
                 if(!is.na(results$G1000_AF[i])){
                     artifact_because[i,3]<-sum(artifact_because[i,3],1,
                                                na.rm=TRUE)
@@ -1385,7 +1406,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
             }
         }
         if(length(grep("ExAC_AF",names(database_calls)))>0){
-            for(i in 1:length(database_calls[,1])){
+            for(i in seq_along(database_calls[,1])){
                 if(!is.na(results$ExAC_AF[i])){
                     artifact_because[i,3]<-sum(artifact_because[i,3],1,
                                                na.rm=TRUE)
@@ -1401,7 +1422,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
             }
         }
         if(length(grep("ESP6500_AF",names(database_calls)))>0){
-            for(i in 1:length(database_calls[,1])){
+            for(i in seq_along(database_calls[,1])){
                 if(!is.na(results$ESP6500_AF[i])){
                     artifact_because[i,3]<-sum(artifact_because[i,3],1,
                                                na.rm=TRUE)
@@ -1417,7 +1438,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
             }
         }
         if(length(grep("GAD_AF",names(database_calls)))>0){
-            for(i in 1:length(database_calls[,1])){
+            for(i in seq_along(database_calls[,1])){
                 if(!is.na(results$GAD_AF[i])){
                     artifact_because[i,3]<-sum(artifact_because[i,3],1,
                                                na.rm=TRUE)
@@ -1433,7 +1454,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
             }
         }
         if(length(grep("CosmicID",names(database_calls)))>0){
-            for(i in 1:length(database_calls[,1])){
+            for(i in seq_along(database_calls[,1])){
                 if(!is.na(results$CosmicID[i])){
                     artifact_because[i,3]<-sum(artifact_because[i,3],1,
                                                na.rm=TRUE)
@@ -1450,7 +1471,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
             }
         }
         if(length(grep("ClinVar",names(database_calls)))>0){
-            for(i in 1:length(database_calls[,1])){
+            for(i in seq_along(database_calls[,1])){
                 if(!is.na(results$ClinVar[i])){
                     artifact_because[i,3]<-sum(artifact_because[i,3],1,
                                                na.rm=TRUE)
@@ -1471,7 +1492,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
 
     #tolerated and freq
     message("->  Consider VAF when tolerated")
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if(!is.na(results$VAF[i])&&((results$VAF[i]>=0.35&&
                                      results$VAF[i]<=0.65)||
                                     (results$VAF[i]>=0.85))){
@@ -1500,7 +1521,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
     #test for strand bias
     message("->  Consider strand bias")
     strandbias<-rep(NA,length(results[,1]))
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if(!is.na(results$Nr_Ref_fwd[i])&&!is.na(results$Nr_Alt_fwd[i])&&
            !is.na(results$Nr_Ref_rev[i])&&!is.na(results$Nr_Alt_rev[i])){
             test<-fisher.test(x=matrix(c(results$Nr_Ref_fwd[i],
@@ -1523,7 +1544,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
     message("->  Consider hotspot list")
     hotspot<-rep(NA,length(results[,1]))
     if(length(hotspots)!=1){
-        for(i in 1:length(hotspots[,1])){
+        for(i in seq_along(hotspots[,1])){
             if((i%%100)==0){
                 message("Hotspot ",i," out of ",length(hotspots[,1]))
             }
@@ -1538,12 +1559,12 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
                     if(length(found2)>0){
                         flag<-rep(FALSE,length(results[,1]))
                         if(is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])==1&&nchar(results$Alt[found2[j]])==1
                             }
                         }
                         if(!is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])==1&&nchar(results$Alt[found2[j]])==1&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                             }
                         }
@@ -1558,12 +1579,12 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
                     if(length(found2)>0){
                         flag<-rep(FALSE,length(results[,1]))
                         if(is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))!=0&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                             }
                         }
                         if(!is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))!=0&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                             }
                         }
@@ -1579,12 +1600,12 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
                     if(length(found2)>0){
                         flag<-rep(FALSE,length(results[,1]))
                         if(is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                             }
                         }
                         if(!is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                             }
                         }
@@ -1600,12 +1621,12 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
                     if(length(found2)>0){
                         flag<-rep(FALSE,length(results[,1]))
                         if(is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-nchar(results$Alt[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                             }
                         }
                         if(!is.na(hotspots[i,3])){
-                            for(j in 1:length(found2)){
+                            for(j in seq_along(found2)){
                                 flag[found2[j]]<-nchar(results$Alt[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                             }
                         }
@@ -1628,7 +1649,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
     message("->  Perform final filtration")
     artifact_score<-rep(0,length(results[,1]))
     message("Calculate Artifact Score")
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if((i%%100)==0){
             message("Call ",i," out of ",length(results[,1]))
         }
@@ -1747,7 +1768,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
     poly_score<-rep(0,length(results[,1]))
     cosmic_flag<-rep(FALSE,length(results[,1]))
     message("Calculate Polymorphism Score")
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if((i%%100)==0){
             message("Call ",i," out of ",length(results[,1]))
         }
@@ -1817,7 +1838,7 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
 
     #corrections
     message("Correct Scores")
-    for(i in 1:length(results[,1])){
+    for(i in seq_along(results[,1])){
         if((i%%100)==0){
             message("Call ",i," out of ",length(results[,1]))
         }
@@ -1907,7 +1928,8 @@ finalFiltration <- function(output_folder,frequency_calls,database_calls,
                                              "/Results_Final.xlsx",sep=""),
                      overwrite = TRUE)
     }
-    return(results)
+    results_g<-exportAsGRanges(results)
+    return(results_g)
 }
 
 

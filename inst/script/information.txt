@@ -1,0 +1,22 @@
+* Sample1.bam and Sample2.bam:
+Both samples result from patients with myelodysplastic syndromes (MDS). Targeted sequencing was
+perfromed on Illumina HiSeq (coverage >50x 95%).
+
+* Sample1.bai and Sample2.bai:
+The indexes were generated using PicardTools.
+
+* Sample1.rawMutations.vcf and Sample2.rawMutations.vcf:
+Variant calling results from GATK HaplotypeCaller 3.3 (using default settings).
+However, the original output was reduced to contain only a few exemplary variants
+(true positive as well as false positive calls).
+
+More information on the test samples can be found in our publication:
+appreci8: A Pipeline for Precise Variant Calling Integrating 8 Tools
+https://doi.org/10.1093/bioinformatics/bty518
+
+Samples 1 and 2 correspond to UPN_Tr1_001 and UPN_Tr1_002.
+Information on all mutations, polymorphisms and artifacts detected in these two samples
+is available as supplementary data at Bioinformatics online.
+The BAM files (containing more than just exemplary regions) are available via the
+NCBI SRA (BioProjectID: 388411; https://www.ncbi.nlm.nih.gov/bioproject/PRJNA388411)
+

@@ -8,7 +8,7 @@ readInput<-function(caller_folder,caller_file_names_add,caller_file_type,
                               dir(file.path(caller_folder),
                                   pattern=paste("*",caller_file_names_add,
                                                 caller_file_type,sep="")))
-        for(i in 1:length(inputFiles)){
+        for(i in seq_along(inputFiles)){
             if(caller_file_type==".vcf"){
                 temp<-data.frame(x=1)
                 data<-lapply(temp,function(x){
@@ -38,7 +38,7 @@ readInput<-function(caller_folder,caller_file_names_add,caller_file_type,
                                    as.numeric(caller_alt))]
                 }
             }
-            for(j in 1:length(temp2[,1])){
+            for(j in seq_along(temp2[,1])){
                 if(temp2[j,3]==TRUE){
                     temp2[j,3]<-"T"
                 }
@@ -66,7 +66,7 @@ readInput<-function(caller_folder,caller_file_names_add,caller_file_type,
                                dir(file.path(caller_folder),
                                    pattern=paste("*",caller_snv_names_add,
                                                  caller_file_type,sep="")))
-        for(i in 1:length(inputFiles1)){
+        for(i in seq_along(inputFiles1)){
             if(caller_file_type==".vcf"){
                 temp<-data.frame(x=1)
                 data<-lapply(temp,function(x){
@@ -96,7 +96,7 @@ readInput<-function(caller_folder,caller_file_names_add,caller_file_type,
                                    as.numeric(caller_alt))]
                 }
             }
-            for(j in 1:length(temp2[,1])){
+            for(j in seq_along(temp2[,1])){
                 if(temp2[j,3]==TRUE){
                     temp2[j,3]<-"T"
                 }
@@ -121,7 +121,7 @@ readInput<-function(caller_folder,caller_file_names_add,caller_file_type,
                                dir(file.path(caller_folder),
                                    pattern=paste("*",caller_indel_names_add,
                                                  caller_file_type,sep="")))
-        for(i in 1:length(inputFiles2)){
+        for(i in seq_along(inputFiles2)){
             if(caller_file_type==".vcf"){
                 temp<-data.frame(x=1)
                 data<-lapply(temp,function(x){
@@ -151,7 +151,7 @@ readInput<-function(caller_folder,caller_file_names_add,caller_file_type,
                                    as.numeric(caller_alt))]
                 }
             }
-            for(j in 1:length(temp2[,1])){
+            for(j in seq_along(temp2[,1])){
                 if(temp2[j,3]==TRUE){
                     temp2[j,3]<-"T"
                 }
@@ -187,7 +187,7 @@ getSampleNames<-function(caller_folder,caller_file_names_add,caller_file_type,
                               dir(file.path(caller_folder),
                                   pattern=paste("*",caller_file_names_add,
                                                 caller_file_type,sep="")))
-        for(i in 1:length(inputFiles)){
+        for(i in seq_along(inputFiles)){
             samplename_temp<-dir(file.path(caller_folder),
                                  pattern=paste("*",caller_file_names_add,
                                                caller_file_type,sep=""))[i]
@@ -202,7 +202,7 @@ getSampleNames<-function(caller_folder,caller_file_names_add,caller_file_type,
                               dir(file.path(caller_folder),
                                   pattern=paste("*",caller_snv_names_add,
                                                 caller_file_type,sep="")))
-        for(i in 1:length(inputFiles)){
+        for(i in seq_along(inputFiles)){
             samplename_temp<-dir(file.path(caller_folder),
                                  pattern=paste("*",caller_snv_names_add,
                                                caller_file_type,sep=""))[i]
@@ -213,7 +213,7 @@ getSampleNames<-function(caller_folder,caller_file_names_add,caller_file_type,
                                dir(file.path(caller_folder),
                                    pattern=paste("*",caller_indel_names_add,
                                                  caller_file_type,sep="")))
-        for(i in 1:length(inputFiles2)){
+        for(i in seq_along(inputFiles2)){
             samplename_temp<-dir(file.path(caller_folder),
                                  pattern=paste("*",
                                                caller_indel_names_add,
@@ -458,3 +458,23 @@ getCharacteristicsBQ<-function(chr,start,stop,ref,alt,folder,sample){
     return(results)
 }
 
+exportAsGRanges<-function(input){
+    end<-as.numeric(input$Pos)
+    input$Pos<-as.numeric(input$Pos)
+    for(i in seq_along(input[,1])){
+        if(nchar(input$Ref[i])>1){
+            end[i]<-end[i]+nchar(input$Ref[i])-1
+        }
+    }
+    input<-cbind(input,end)
+    output<-makeGRangesFromDataFrame(input,start.field="Pos",end.field="end",
+                                     keep.extra.columns = TRUE)
+    return(output)
+}
+
+importAsDataFrame<-function(input){
+    temp<-as.data.frame(input)
+    output<-cbind(SampleID=temp[,6],Chr=temp[,1],Pos=temp[,2],
+                  temp[,7:length(temp[1,])])
+    return(output)
+}

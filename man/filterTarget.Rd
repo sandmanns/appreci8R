@@ -50,7 +50,7 @@ Column of the variant calling input containing information on ref (default: 4).
 Column of the variant calling input containing information on alt (default: 5).
 }
   \item{targetRegions}{
-Data.frame object containing the target regions to be analyzed (bed-format: 1st column chr, 2nd column 0-based start pos, 3rd column 1-based end pos).
+Data.frame object containing the target regions to be analyzed (bed-format: 1st column chr, 2nd column 0-based start pos, 3rd column 1-based end pos). Or: GRanges object containing the target regions to be analyzed.
 }
 }
 \details{

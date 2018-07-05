@@ -4091,13 +4091,13 @@ appreci8Rshiny <- function() {
                     output$log_info<-renderUI({HTML(log_info)})
                 }
                 if(length(sampleNameTest[1,])==1){
-                    for(i in 1:length(sampleNameTest[,1])){
+                    for(i in seq_along(sampleNameTest[,1])){
                         overview[i,1]<-as.character(sampleNameTest[i,1])
                     }
                     output$table <- renderDataTable(datatable(overview))
                 }
                 if(length(sampleNameTest[1,])>1){
-                    for(i in 1:length(sampleNameTest[,1])){
+                    for(i in seq_along(sampleNameTest[,1])){
                         compareSample<-sampleNameTest[i,1]
                         flag<-TRUE
                         for(j in 2:length(sampleNameTest[1,])){
@@ -4119,8 +4119,8 @@ appreci8Rshiny <- function() {
                 }
 
                 #Report raw calls
-                for(i in 1:length(raw_calls)){
-                    for(j in 1:length(overview[,1])){
+                for(i in seq_along(raw_calls)){
+                    for(j in seq_along(overview[,1])){
                         if(length(raw_calls[[i]])>0&&
                            !is.na(raw_calls[[i]][[j]][1,2])){
                             overview[j,i+1]<-length(raw_calls[[i]][[j]][,1])
@@ -4141,29 +4141,29 @@ appreci8Rshiny <- function() {
                 progress <- shiny::Progress$new()
                 progress$set(message = "1. Target filtration", value = 0)
                 if(!is.null(input$targetRegions)){
-                    for(i in 1:length(overview[,1])){
+                    for(i in seq_along(overview[,1])){
                         overview[i,1]<-as.character(overview[i,1])
                     }
                     overview2<-overview
-                    overview2[c(1:length(overview[,1])),c(2:length(overview[1,]))]<-NA
+                    overview2[c(seq_along(overview[,1])),c(2:length(overview[1,]))]<-NA
                     checkpoint<-overview
-                    checkpoint[c(1:length(overview[,1])),c(2:length(overview[1,]))]<-NA
+                    checkpoint[c(seq_along(overview[,1])),c(2:length(overview[1,]))]<-NA
                     target_calls<-list()
                     target_temp<-input$targetRegions
                     target<-read.table(target_temp$datapath,
                                        header=FALSE,sep="\t",
                                        stringsAsFactors=FALSE)
-                    for(i in 1:length(raw_calls)){
+                    for(i in seq_along(raw_calls)){
                         progress$inc(1/length(raw_calls),
                                      detail=paste("->",
                                                   as.character(names(overview[i+1]))))
                         target_calls[[i]]<-list()
                         if(length(raw_calls[[i]])>0){
-                            for(j in 1:length(overview[,1])){
+                            for(j in seq_along(overview[,1])){
                                 checkpoint[j,i+1]<-1
                                 if(!is.na(raw_calls[[i]][[j]][1,2])){
                                     include<-rep(FALSE,length(raw_calls[[i]][[j]][,1]))
-                                    for(k in 1:length(raw_calls[[i]][[j]][,1])){
+                                    for(k in seq_along(raw_calls[[i]][[j]][,1])){
                                         flag1<-as.character(raw_calls[[i]][[j]][k,2])==as.character(target[,1])
                                         flag2<-raw_calls[[i]][[j]][k,3]>target[,2]
                                         flag3<-raw_calls[[i]][[j]][k,3]<=target[,3]
@@ -4211,7 +4211,7 @@ appreci8Rshiny <- function() {
                 progress <- shiny::Progress$new()
                 progress$set(message = "2. Normalization", value = 0)
                 normalized_calls<-list()
-                for(i in 1:length(target_calls)){
+                for(i in seq_along(target_calls)){
                     progress$inc(1/length(target_calls),
                                  detail=paste("->",
                                               as.character(names(overview[i+1]))))
@@ -4536,11 +4536,11 @@ appreci8Rshiny <- function() {
                 progress$set(message = "3. Annotate", value = 0)
                 annotated_calls<-list()
                 overview3<-overview
-                overview3[c(1:length(overview[,1])),c(2:length(overview[1,]))]<-NA
+                overview3[c(seq_along(overview[,1])),c(2:length(overview[1,]))]<-NA
                 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
                 connection_txid_symbol<-transcripts(Homo.sapiens,
                                                     columns=c("TXID","SYMBOL"))
-                for(i in 1:length(normalized_calls)){
+                for(i in seq_along(normalized_calls)){
                     progress$inc(1/length(normalized_calls))
                     annotated_calls[[i]]<-data.frame()
                     if(length(normalized_calls[[i]])>0){
@@ -4562,7 +4562,7 @@ appreci8Rshiny <- function() {
                         }
                         if(!is.null(input$locations)){
                             located<-locateVariants(test,txdb,AllVariants())
-                            for(j in 1:length(input$locations)){
+                            for(j in seq_along(input$locations)){
                                 if(j==1){
                                     of_interest<-data.frame(located$LOCATION==input$locations[j])
                                 }
@@ -4587,7 +4587,7 @@ appreci8Rshiny <- function() {
                         if(!is.null(input$consequences)){
                             predicted<-predictCoding(query=test,subject=txdb,
                                                      seqSource=Hsapiens)
-                            for(j in 1:length(predicted[,1])){
+                            for(j in seq_along(predicted[,1])){
                                 if(as.character(predicted$REFCODON[j])=="CTG"){
                                     if(as.character(predicted$VARCODON[j])=="ATG"){
                                         predicted$CONSEQUENCE[j]<-"nonsynonymous"
@@ -4637,7 +4637,7 @@ appreci8Rshiny <- function() {
                                     }
                                 }
                             }
-                            for(j in 1:length(input$consequences)){
+                            for(j in seq_along(input$consequences)){
                                 if(j==1){
                                     of_interest<-data.frame(predicted$CONSEQUENCE==input$consequences[j])
                                 }
@@ -4666,7 +4666,7 @@ appreci8Rshiny <- function() {
                         counter_predicted<-1
                         keep<-rep(TRUE,length(annotated_calls[[i]][,1]))
 
-                        for(k in 1:length(annotated_calls[[i]][,1])){
+                        for(k in seq_along(annotated_calls[[i]][,1])){
                             progress_small$inc(1/length(annotated_calls[[i]][,1]),
                                                detail=paste("-> Call",k,
                                                             "out of",
@@ -4689,7 +4689,7 @@ appreci8Rshiny <- function() {
                             }
                             if(!is.na(annotated_calls[[i]][k,6])&&
                                !is.null(input$consequences)){
-                                for(j in 1:length(strsplit(annotated_calls[[i]][k,6],",")[[1]])){
+                                for(j in seq_along(strsplit(annotated_calls[[i]][k,6],",")[[1]])){
                                     if(counter_predicted>length(ranges(predicted))||
                                        strsplit(annotated_calls[[i]][k,6],",")[[1]][j]!="coding"){
                                         if(!is.na(annotated_calls[[i]][k,8])){
@@ -4805,7 +4805,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                         annotated_calls[[i]]<-annotated_calls[[i]][keep,]
-                        for(k in 1:length(overview3[,1])){
+                        for(k in seq_along(overview3[,1])){
                             overview3[k,i+1]<-length(annotated_calls[[i]][annotated_calls[[i]][,1]==overview3[k,1],1])
                             checkpoint[k,i+1]<-3
                         }
@@ -4855,7 +4855,7 @@ appreci8Rshiny <- function() {
                 }
                 combined_calls_temp<-combined_calls
                 overview4<-cbind(overview[,1],RawCalls=NA)
-                for(i in 1:length(annotated_calls)){
+                for(i in seq_along(annotated_calls)){
                     if(length(annotated_calls[[i]])>0){
                         temp<-annotated_calls[[i]]
                         add_to_temp<-matrix(rep(NA,(length(combined_calls[1,])-16)),
@@ -4900,9 +4900,9 @@ appreci8Rshiny <- function() {
                 }
                 temp<-unique(combined_calls)
                 combined_calls<-temp
-                for(i in 1:length(overview4[,1])){
+                for(i in seq_along(overview4[,1])){
                     overview4[i,2]<-length(combined_calls[combined_calls[,1]==overview4[i,1],1])
-                    for(j in 1:length(annotated_calls)){
+                    for(j in seq_along(annotated_calls)){
                         if(length(annotated_calls[[j]])>0){
                             checkpoint[i,j+1]<-4
                         }
@@ -4928,7 +4928,7 @@ appreci8Rshiny <- function() {
                                Nr_Ref_fwd=NA,Nr_Alt_fwd=NA,DP_fwd=NA,VAF_fwd=NA,
                                Nr_Ref_rev=NA,Nr_Alt_rev=NA,DP_rev=NA,VAF_rev=NA)
                 folder<-input$bam_folder
-                for(i in 1:length(results[,1])){
+                for(i in seq_along(results[,1])){
                     progress$inc(1/length(results[,1]),
                                  detail=paste("-> Call ",i," out of ",
                                               length(results[,1])))
@@ -5143,7 +5143,7 @@ appreci8Rshiny <- function() {
                 include2<-results[,7]>=input$nr_alt
                 include3<-(results[,9]*100)>=input$vaf
                 include4<-results[,11]>=input$bq
-                for(i in 1:length(results[,1])){
+                for(i in seq_along(results[,1])){
                     if(is.na(results[i,10])){
                         results[i,10]<-0
                     }
@@ -5152,7 +5152,7 @@ appreci8Rshiny <- function() {
 
                 frequency_calls<-frequency_calls_temp[rowSums(cbind(include1,include2,include3,include4,include5))>=5&!is.na(rowSums(cbind(include1,include2,include3,include4,include5))>=5),]
                 overview4<-cbind(overview4,VAFandBQFiltered=NA)
-                for(i in 1:length(overview4[,1])){
+                for(i in seq_along(overview4[,1])){
                     overview4[i,3]<-length(frequency_calls[frequency_calls[,1]==overview4[i,1],1])
                     for(j in 2:length(checkpoint[1,])){
                         if(!is.na(checkpoint[i,j])){
@@ -5209,12 +5209,12 @@ appreci8Rshiny <- function() {
                     clinvar<-data.frame(Gene=NA,Start=NA,Stop=NA,Ref=NA,Alt=NA,
                                         Sig=NA)
                     genes_temp<-c()
-                    for(i in 1:length(frequency_calls[,1])){
+                    for(i in seq_along(frequency_calls[,1])){
                         genes_temp<-c(genes_temp,strsplit(frequency_calls[i,14],
                                                           split=",")[[1]])
                     }
                     genes<-unique(genes_temp[genes_temp!="NA"])
-                    for(i in 1:length(genes)){
+                    for(i in seq_along(genes)){
                         res<-entrez_search("clinvar",term=genes[i])
                         cv<-entrez_summary("clinvar",id=res$ids)
                         info<-extract_from_esummary(cv,"variation_set",
@@ -5222,11 +5222,11 @@ appreci8Rshiny <- function() {
                         significance<-extract_from_esummary(cv,
                                                             "clinical_significance",
                                                             simplify=FALSE)
-                        for(j in 1:length(res$ids)){
+                        for(j in seq_along(res$ids)){
                             info2<-info[res$ids[j]][[1]][[1]]
                             significance2<-significance[res$ids[j]][[1]][[1]]
                             if(length(info2$variation_loc[[1]])){
-                                for(k in 1:length(info2$variation_loc[[1]][,1])){
+                                for(k in seq_along(info2$variation_loc[[1]][,1])){
                                     if(info2$variation_loc[[1]][k,2]=="GRCh37"){
                                         temp<-data.frame(Gene=NA,Start=NA,
                                                          Stop=NA,Ref=NA,Alt=NA)
@@ -5252,7 +5252,7 @@ appreci8Rshiny <- function() {
                 c.<-c()
                 c.complement<-c()
                 p.<-c()
-                for(i in 1:length(frequency_calls[,1])){
+                for(i in seq_along(frequency_calls[,1])){
                     progress$inc(0,detail="-> Pre-processing of the calls ")
                     for(j in 1:(length(strsplit(frequency_calls[i,7],
                                                 split=",")[[1]]))){
@@ -5399,7 +5399,7 @@ appreci8Rshiny <- function() {
                     }
                 }
 
-                for(i in 1:length(frequency_calls[,1])){
+                for(i in seq_along(frequency_calls[,1])){
                     progress$inc(1/length(results[,1]),
                                  detail=paste("-> Call ",i," out of ",
                                               length(results[,1])))
@@ -5468,7 +5468,7 @@ appreci8Rshiny <- function() {
                         if(!is.null(input$cosmic)){
                             snp_info<-rowRanges(cosmic_67)[as.character(seqnames(rowRanges(cosmic_67)))==frequency_calls[i,2]&start(ranges(rowRanges(cosmic_67)))==frequency_calls[i,3]]
                             if(length(snp_info)>0){
-                                for(j in 1:length(snp_info[,1])){
+                                for(j in seq_along(snp_info[,1])){
                                     if(snp_info$REF==frequency_calls[i,4]&&
                                        snp_info$ALT[[1]]==frequency_calls[i,5]||
                                        (snp_info$REF==as.character(complement(DNAString(frequency_calls[i,4])))&&
@@ -5500,7 +5500,7 @@ appreci8Rshiny <- function() {
                         }
                         if(!is.null(input$clinvar)){
                             snp_info_temp<-data.frame()
-                            for(j in 1:length(strsplit(frequency_calls[i,14],
+                            for(j in seq_along(strsplit(frequency_calls[i,14],
                                                        split=",")[[1]])){
                                 if(!is.na(strsplit(frequency_calls[i,14],
                                                    split=",")[[1]][j])){
@@ -5546,7 +5546,7 @@ appreci8Rshiny <- function() {
                             snp_info_rs<-snp_info$RefSNP_id[(start(ranges(snp_info))<=frequency_calls[i,3])&(end(ranges(snp_info))>=(as.numeric(frequency_calls[i,3])+nchar(frequency_calls[i,4])-1))]
                             if(length(snp_info_rs)>0){
                                 ncbi<-ncbi_snp_query2(snp_info_rs)[[1]]
-                                for(j in 1:length(ncbi[,1])){
+                                for(j in seq_along(ncbi[,1])){
                                     if(nchar(results[i,4])>nchar(results[i,5])){
                                         if(length(grep(substr(results[i,4],2,
                                                               nchar(results[i,4])),
@@ -5567,7 +5567,7 @@ appreci8Rshiny <- function() {
                         if(!is.null(input$cosmic)){
                             snp_info<-rowRanges(cosmic_67)[as.character(seqnames(rowRanges(cosmic_67)))==frequency_calls[i,2]&start(ranges(rowRanges(cosmic_67)))==frequency_calls[i,3]]
                             if(length(snp_info)>0){
-                                for(j in 1:length(snp_info[,1])){
+                                for(j in seq_along(snp_info[,1])){
                                     if(snp_info$REF==frequency_calls[i,4]&&
                                        snp_info$ALT[[1]]==frequency_calls[i,5]||
                                        (snp_info$REF==as.character(complement(DNAString(frequency_calls[i,4])))
@@ -5598,7 +5598,7 @@ appreci8Rshiny <- function() {
                         }
                         if(!is.null(input$clinvar)){
                             snp_info_temp<-data.frame()
-                            for(j in 1:length(strsplit(frequency_calls[i,14],
+                            for(j in seq_along(strsplit(frequency_calls[i,14],
                                                        split=",")[[1]])){
                                 if(!is.na(strsplit(frequency_calls[i,14],
                                                    split=",")[[1]][j])){
@@ -5618,7 +5618,7 @@ appreci8Rshiny <- function() {
                             if(length(snp_info)>0){
                                 snp_info2<-snp_info[snp_info[,2]==(as.numeric(frequency_calls[i,3])-1),]
                                 if(length(snp_info2[,1])>0){
-                                    for(j in 1:length(snp_info2[,1])){
+                                    for(j in seq_along(snp_info2[,1])){
                                         if(snp_info2[j,4]=="-"&&
                                            snp_info2[j,5]==substr(frequency_calls[i,5],2,nchar(frequency_calls[i,5]))){
                                             results$ClinVar[i]<-snp_info2[j,6]
@@ -5653,7 +5653,7 @@ appreci8Rshiny <- function() {
                         ncbi<-rbind(ncbi,temp)
                     }
                 }
-                for(i in 1:length(results[,1])){
+                for(i in seq_along(results[,1])){
                     if(!is.na(results[i,6])){
                         results$dbSNP_MAF[i]<-as.numeric(max(ncbi[ncbi[,1]==results[i,6],8]))
                         if(sum(ncbi[ncbi[,1]==results[i,6],7]==results[i,4],na.rm=TRUE)>0){
@@ -5722,7 +5722,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                 }
-                for(i in 1:length(overview4[,1])){
+                for(i in seq_along(overview4[,1])){
                     for(j in 2:length(checkpoint[1,])){
                         if(!is.na(checkpoint[i,j])){
                             checkpoint[i,j]<-6
@@ -5842,7 +5842,7 @@ appreci8Rshiny <- function() {
                              detail="->  Consider samples with the same call")
                 progress_small <- shiny::Progress$new()
                 progress_small$set(message = "", value = 0)
-                for(i in 1:length(results[,1])){
+                for(i in seq_along(results[,1])){
                     progress_small$inc(1/length(results[,1]),
                                        detail=paste("-> Call ",i," out of ",
                                                     length(results[,1])))
@@ -5854,7 +5854,7 @@ appreci8Rshiny <- function() {
                              detail="->  Consider samples with a call at the same position")
                 progress_small <- shiny::Progress$new()
                 progress_small$set(message = "", value = 0)
-                for(i in 1:length(results[,1])){
+                for(i in seq_along(results[,1])){
                     progress_small$inc(1/length(results[,1]),
                                        detail=paste("-> Call ",i," out of ",
                                                     length(results[,1])))
@@ -5897,7 +5897,7 @@ appreci8Rshiny <- function() {
                 progress$inc(1/13,detail="->  Consider nr of databases")
                 if(length(database_calls[1,])>10){
                     if(length(grep("dbSNP",names(database_calls)))>0){
-                        for(i in 1:length(database_calls[,1])){
+                        for(i in seq_along(database_calls[,1])){
                             if(!is.na(results$dbSNP[i])){
                                 artifact_because[i,3]<-sum(artifact_because[i,3],
                                                            1,na.rm=TRUE)
@@ -5915,7 +5915,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(length(grep("G1000_AF",names(database_calls)))>0){
-                        for(i in 1:length(database_calls[,1])){
+                        for(i in seq_along(database_calls[,1])){
                             if(!is.na(results$G1000_AF[i])){
                                 artifact_because[i,3]<-sum(artifact_because[i,3],
                                                            1,na.rm=TRUE)
@@ -5931,7 +5931,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(length(grep("ExAC_AF",names(database_calls)))>0){
-                        for(i in 1:length(database_calls[,1])){
+                        for(i in seq_along(database_calls[,1])){
                             if(!is.na(results$ExAC_AF[i])){
                                 artifact_because[i,3]<-sum(artifact_because[i,3],
                                                            1,na.rm=TRUE)
@@ -5947,7 +5947,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(length(grep("ESP6500_AF",names(database_calls)))>0){
-                        for(i in 1:length(database_calls[,1])){
+                        for(i in seq_along(database_calls[,1])){
                             if(!is.na(results$ESP6500_AF[i])){
                                 artifact_because[i,3]<-sum(artifact_because[i,3],
                                                            1,na.rm=TRUE)
@@ -5963,7 +5963,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(length(grep("GAD_AF",names(database_calls)))>0){
-                        for(i in 1:length(database_calls[,1])){
+                        for(i in seq_along(database_calls[,1])){
                             if(!is.na(results$GAD_AF[i])){
                                 artifact_because[i,3]<-sum(artifact_because[i,3],
                                                            1,na.rm=TRUE)
@@ -5979,7 +5979,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(length(grep("CosmicID",names(database_calls)))>0){
-                        for(i in 1:length(database_calls[,1])){
+                        for(i in seq_along(database_calls[,1])){
                             if(!is.na(results$CosmicID[i])){
                                 artifact_because[i,3]<-sum(artifact_because[i,3],
                                                            1,na.rm=TRUE)
@@ -5996,7 +5996,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(length(grep("ClinVar",names(database_calls)))>0){
-                        for(i in 1:length(database_calls[,1])){
+                        for(i in seq_along(database_calls[,1])){
                             if(!is.na(results$ClinVar[i])){
                                 artifact_because[i,3]<-sum(artifact_because[i,3],
                                                            1,na.rm=TRUE)
@@ -6017,7 +6017,7 @@ appreci8Rshiny <- function() {
 
                 #tolerated and freq
                 progress$inc(1/13,detail="->  Consider VAF when tolerated")
-                for(i in 1:length(results[,1])){
+                for(i in seq_along(results[,1])){
                     if(!is.na(results$VAF[i])&&((results$VAF[i]>=0.35&&
                                                  results$VAF[i]<=0.65)||
                                                 (results$VAF[i]>=0.85))){
@@ -6047,7 +6047,7 @@ appreci8Rshiny <- function() {
                 #test for strand bias (8 von 15)
                 progress$inc(1/13,detail="->  Consider strand bias")
                 strandbias<-rep(NA,length(results[,1]))
-                for(i in 1:length(results[,1])){
+                for(i in seq_along(results[,1])){
                     if(!is.na(results$Nr_Ref_fwd[i])&&
                        !is.na(results$Nr_Alt_fwd[i])&&
                        !is.na(results$Nr_Ref_rev[i])&&
@@ -6075,7 +6075,7 @@ appreci8Rshiny <- function() {
                 progress_small <- shiny::Progress$new()
                 progress_small$set(message = "", value = 0)
                 if(!is.null(input$hotspots)){
-                    for(i in 1:length(hotspots[,1])){
+                    for(i in seq_along(hotspots[,1])){
                         progress_small$inc(1/length(hotspots[,1]),
                                            detail=paste("->  Hotspot",i,
                                                         "out of",
@@ -6092,12 +6092,12 @@ appreci8Rshiny <- function() {
                                 if(length(found2)>0){
                                     flag<-rep(FALSE,length(results[,1]))
                                     if(is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-nchar(results$Ref[found2[j]])==1&&nchar(results$Alt[found2[j]])==1
                                         }
                                     }
                                     if(!is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-nchar(results$Ref[found2[j]])==1&&nchar(results$Alt[found2[j]])==1&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                                         }
                                     }
@@ -6112,12 +6112,12 @@ appreci8Rshiny <- function() {
                                 if(length(found2)>0){
                                     flag<-rep(FALSE,length(results[,1]))
                                     if(is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))!=0&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                                         }
                                     }
                                     if(!is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))!=0&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                                         }
                                     }
@@ -6133,12 +6133,12 @@ appreci8Rshiny <- function() {
                                 if(length(found2)>0){
                                     flag<-rep(FALSE,length(results[,1]))
                                     if(is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-nchar(results$Ref[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                                         }
                                     }
                                     if(!is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-nchar(results$Ref[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                                         }
                                     }
@@ -6154,12 +6154,12 @@ appreci8Rshiny <- function() {
                                 if(length(found2)>0){
                                     flag<-rep(FALSE,length(results[,1]))
                                     if(is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-nchar(results$Alt[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                                         }
                                     }
                                     if(!is.na(hotspots[i,3])){
-                                        for(j in 1:length(found2)){
+                                        for(j in seq_along(found2)){
                                             flag[found2[j]]<-nchar(results$Alt[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                                         }
                                     }
@@ -6189,7 +6189,7 @@ appreci8Rshiny <- function() {
                 progress_small$set(message = "Calculate Artifact Score",
                                    value = 0)
                 if(input$artifact_score=="No"){
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call",i,"out of",
                                                         length(results[,1])))
@@ -6325,7 +6325,7 @@ appreci8Rshiny <- function() {
                     }
                 }
                 if(input$artifact_score=="Yes"){
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call",i,"out of",
                                                         length(results[,1])))
@@ -6471,7 +6471,7 @@ appreci8Rshiny <- function() {
                 progress_small$set(message = "Calculate Polymorphism Score",
                                    value = 0)
                 if(input$polymorphism_score=="No"){
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call",i,"out of",
                                                         length(results[,1])))
@@ -6546,7 +6546,7 @@ appreci8Rshiny <- function() {
                     }
                 }
                 if(input$polymorphism_score=="Yes"){
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call",i,"out of",
                                                         length(results[,1])))
@@ -6629,7 +6629,7 @@ appreci8Rshiny <- function() {
                 progress_small <- shiny::Progress$new()
                 progress_small$set(message = "Correct Scores", value = 0)
                 if(input$artifact_score=="No"){
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call",i,"out of",
                                                         length(results[,1])))
@@ -6699,7 +6699,7 @@ appreci8Rshiny <- function() {
 
                 }
                 if(input$artifact_score=="Yes"){
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call",i,"out of",
                                                         length(results[,1])))
@@ -6797,7 +6797,7 @@ appreci8Rshiny <- function() {
 
                 overview4<-cbind(overview4,Mutations=NA,Polymorphisms=NA,
                                  Artifacts=NA)
-                for(i in 1:length(overview4[,1])){
+                for(i in seq_along(overview4[,1])){
                     overview4[i,4]<-length(results.mutations[results.mutations[,1]==overview4[i,1],1])
                     overview4[i,5]<-length(results.polymorphisms[results.polymorphisms[,1]==overview4[i,1],1])
                     overview4[i,6]<-length(results.artifacts[results.artifacts[,1]==overview4[i,1],1])
@@ -6859,7 +6859,7 @@ appreci8Rshiny <- function() {
                                      detail=paste("->",
                                                   as.character(names(checkpointFile[i+1]))))
                         target_calls[[i]]<-list()
-                        for(j in 1:length(checkpointFile[,i+1])){
+                        for(j in seq_along(checkpointFile[,i+1])){
                             if(!is.na(checkpointFile[j,i+1])){
                                 target_calls[[i]][[j]]<-read.table(paste(input$output_folder,
                                                                          "/",
@@ -6883,7 +6883,7 @@ appreci8Rshiny <- function() {
                     progress <- shiny::Progress$new()
                     progress$set(message = "2. Normalization", value = 0)
                     normalized_calls<-list()
-                    for(i in 1:length(target_calls)){
+                    for(i in seq_along(target_calls)){
                         progress$inc(1/length(target_calls),
                                      detail=paste("->",
                                                   as.character(names(checkpointFile[i+1]))))
@@ -7333,12 +7333,12 @@ appreci8Rshiny <- function() {
                     progress$set(message = "3. Annotate", value = 0)
                     annotated_calls<-list()
                     overview3<-checkpointFile
-                    overview3[c(1:length(checkpointFile[,1])),c(2:length(checkpointFile[1,]))]<-NA
+                    overview3[c(seq_along(checkpointFile[,1])),c(2:length(checkpointFile[1,]))]<-NA
                     txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
                     connection_txid_symbol<-transcripts(Homo.sapiens,
                                                         columns=c("TXID",
                                                                   "SYMBOL"))
-                    for(i in 1:length(normalized_calls)){
+                    for(i in seq_along(normalized_calls)){
                         progress$inc(1/length(normalized_calls))
                         annotated_calls[[i]]<-data.frame()
                         if(length(normalized_calls[[i]])>0){
@@ -7361,7 +7361,7 @@ appreci8Rshiny <- function() {
                             }
                             if(!is.null(input$locations)){
                                 located<-locateVariants(test,txdb,AllVariants())
-                                for(j in 1:length(input$locations)){
+                                for(j in seq_along(input$locations)){
                                     if(j==1){
                                         of_interest<-data.frame(located$LOCATION==input$locations[j])
                                     }
@@ -7387,7 +7387,7 @@ appreci8Rshiny <- function() {
                                 predicted<-predictCoding(query=test,
                                                          subject=txdb,
                                                          seqSource=Hsapiens)
-                                for(j in 1:length(predicted[,1])){
+                                for(j in seq_along(predicted[,1])){
                                     if(as.character(predicted$REFCODON[j])=="CTG"){
                                         if(as.character(predicted$VARCODON[j])=="ATG"){
                                             predicted$CONSEQUENCE[j]<-"nonsynonymous"
@@ -7437,7 +7437,7 @@ appreci8Rshiny <- function() {
                                         }
                                     }
                                 }
-                                for(j in 1:length(input$consequences)){
+                                for(j in seq_along(input$consequences)){
                                     if(j==1){
                                         of_interest<-data.frame(predicted$CONSEQUENCE==input$consequences[j])
                                     }
@@ -7467,7 +7467,7 @@ appreci8Rshiny <- function() {
                             counter_predicted<-1
                             keep<-rep(TRUE,length(annotated_calls[[i]][,1]))
 
-                            for(k in 1:length(annotated_calls[[i]][,1])){
+                            for(k in seq_along(annotated_calls[[i]][,1])){
                                 progress_small$inc(1/length(annotated_calls[[i]][,1]),
                                                    detail=paste("-> Call",k,
                                                                 "out of",
@@ -7490,7 +7490,7 @@ appreci8Rshiny <- function() {
                                 }
                                 if(!is.na(annotated_calls[[i]][k,6])&&
                                    !is.null(input$consequences)){
-                                    for(j in 1:length(strsplit(annotated_calls[[i]][k,6],",")[[1]])){
+                                    for(j in seq_along(strsplit(annotated_calls[[i]][k,6],",")[[1]])){
                                         if(counter_predicted>length(ranges(predicted))||
                                            strsplit(annotated_calls[[i]][k,6],",")[[1]][j]!="coding"){
                                             if(!is.na(annotated_calls[[i]][k,8])){
@@ -7597,7 +7597,7 @@ appreci8Rshiny <- function() {
                                 }
                             }
                             annotated_calls[[i]]<-annotated_calls[[i]][keep,]
-                            for(k in 1:length(overview3[,1])){
+                            for(k in seq_along(overview3[,1])){
                                 overview3[k,i+1]<-length(annotated_calls[[i]][annotated_calls[[i]][,1]==overview3[k,1],1])
                                 checkpoint[k,i+1]<-3
                             }
@@ -7680,7 +7680,7 @@ appreci8Rshiny <- function() {
                     }
                     combined_calls_temp<-combined_calls
                     overview4<-cbind(checkpointFile[,1],RawCalls=NA)
-                    for(i in 1:length(annotated_calls)){
+                    for(i in seq_along(annotated_calls)){
                         if(length(annotated_calls[[i]])>0){
                             temp<-annotated_calls[[i]]
                             add_to_temp<-matrix(rep(NA,
@@ -7726,9 +7726,9 @@ appreci8Rshiny <- function() {
                     }
                     temp<-unique(combined_calls)
                     combined_calls<-temp
-                    for(i in 1:length(overview4[,1])){
+                    for(i in seq_along(overview4[,1])){
                         overview4[i,2]<-length(combined_calls[combined_calls[,1]==overview4[i,1],1])
-                        for(j in 1:length(annotated_calls)){
+                        for(j in seq_along(annotated_calls)){
                             if(length(annotated_calls[[j]])>0){
                                 checkpoint[i,j+1]<-4
                             }
@@ -7773,7 +7773,7 @@ appreci8Rshiny <- function() {
                                    VAF_fwd=NA,Nr_Ref_rev=NA,Nr_Alt_rev=NA,
                                    DP_rev=NA,VAF_rev=NA)
                     folder<-input$bam_folder
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress$inc(1/length(results[,1]),
                                      detail=paste("-> Call ",i," out of ",
                                                   length(results[,1])))
@@ -7975,7 +7975,7 @@ appreci8Rshiny <- function() {
                     include2<-results[,7]>=input$nr_alt
                     include3<-(results[,9]*100)>=input$vaf
                     include4<-results[,11]>=input$bq
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         if(is.na(results[i,10])){
                             results[i,10]<-0
                         }
@@ -7989,7 +7989,7 @@ appreci8Rshiny <- function() {
                         overview4<-cbind(checkpointFile[,1],RawCalls=NA,
                                          VAFandBQFiltered=NA)
                     }
-                    for(i in 1:length(overview4[,1])){
+                    for(i in seq_along(overview4[,1])){
                         overview4[i,3]<-length(frequency_calls[frequency_calls[,1]==overview4[i,1],1])
                         for(j in 2:length(checkpoint[1,])){
                             if(!is.na(checkpoint[i,j])){
@@ -8062,13 +8062,13 @@ appreci8Rshiny <- function() {
                         clinvar<-data.frame(Gene=NA,Start=NA,Stop=NA,Ref=NA,
                                             Alt=NA,Sig=NA)
                         genes_temp<-c()
-                        for(i in 1:length(frequency_calls[,1])){
+                        for(i in seq_along(frequency_calls[,1])){
                             genes_temp<-c(genes_temp,
                                           strsplit(frequency_calls[i,14],
                                                    split=",")[[1]])
                         }
                         genes<-unique(genes_temp[genes_temp!="NA"])
-                        for(i in 1:length(genes)){
+                        for(i in seq_along(genes)){
                             res<-entrez_search("clinvar",term=genes[i])
                             cv<-entrez_summary("clinvar",id=res$ids)
                             info<-extract_from_esummary(cv,
@@ -8077,11 +8077,11 @@ appreci8Rshiny <- function() {
                             significance<-extract_from_esummary(cv,
                                                                 "clinical_significance",
                                                                 simplify=FALSE)
-                            for(j in 1:length(res$ids)){
+                            for(j in seq_along(res$ids)){
                                 info2<-info[res$ids[j]][[1]][[1]]
                                 significance2<-significance[res$ids[j]][[1]][[1]]
                                 if(length(info2$variation_loc[[1]])){
-                                    for(k in 1:length(info2$variation_loc[[1]][,1])){
+                                    for(k in seq_along(info2$variation_loc[[1]][,1])){
                                         if(info2$variation_loc[[1]][k,2]=="GRCh37"){
                                             temp<-data.frame(Gene=NA,Start=NA,
                                                              Stop=NA,Ref=NA,Alt=NA)
@@ -8107,7 +8107,7 @@ appreci8Rshiny <- function() {
                     c.<-c()
                     c.complement<-c()
                     p.<-c()
-                    for(i in 1:length(frequency_calls[,1])){
+                    for(i in seq_along(frequency_calls[,1])){
                         progress$inc(0,detail="-> Pre-processing of the calls ")
                         for(j in 1:(length(strsplit(frequency_calls[i,7],
                                                     split=",")[[1]]))){
@@ -8214,7 +8214,7 @@ appreci8Rshiny <- function() {
                         }
                     }
 
-                    for(i in 1:length(frequency_calls[,1])){
+                    for(i in seq_along(frequency_calls[,1])){
                         progress$inc(1/length(results[,1]),
                                      detail=paste("-> Call ",i," out of ",
                                                   length(results[,1])))
@@ -8285,7 +8285,7 @@ appreci8Rshiny <- function() {
                             if(!is.null(input$cosmic)){
                                 snp_info<-rowRanges(cosmic_67)[as.character(seqnames(rowRanges(cosmic_67)))==frequency_calls[i,2]&start(ranges(rowRanges(cosmic_67)))==frequency_calls[i,3]]
                                 if(length(snp_info)>0){
-                                    for(j in 1:length(snp_info[,1])){
+                                    for(j in seq_along(snp_info[,1])){
                                         if(snp_info$REF==frequency_calls[i,4]&&
                                            snp_info$ALT[[1]]==frequency_calls[i,5]||
                                            (snp_info$REF==as.character(complement(DNAString(frequency_calls[i,4])))&&
@@ -8316,7 +8316,7 @@ appreci8Rshiny <- function() {
                             }
                             if(!is.null(input$clinvar)){
                                 snp_info_temp<-data.frame()
-                                for(j in 1:length(strsplit(frequency_calls[i,14],
+                                for(j in seq_along(strsplit(frequency_calls[i,14],
                                                            split=",")[[1]])){
                                     if(!is.na(strsplit(frequency_calls[i,14],split=",")[[1]][j])){
                                         temp<-clinvar[grep(strsplit(frequency_calls[i,14],split=",")[[1]][j],clinvar[,1]),]
@@ -8353,7 +8353,7 @@ appreci8Rshiny <- function() {
                                 snp_info_rs<-snp_info$RefSNP_id[(start(ranges(snp_info))<=frequency_calls[i,3])&(end(ranges(snp_info))>=(as.numeric(frequency_calls[i,3])+nchar(frequency_calls[i,4])-1))]
                                 if(length(snp_info_rs)>0){
                                     ncbi<-ncbi_snp_query2(snp_info_rs)[[1]]
-                                    for(j in 1:length(ncbi[,1])){
+                                    for(j in seq_along(ncbi[,1])){
                                         if(nchar(results[i,4])>nchar(results[i,5])){
                                             if(length(grep(substr(results[i,4],
                                                                   2,
@@ -8376,7 +8376,7 @@ appreci8Rshiny <- function() {
                             if(!is.null(input$cosmic)){
                                 snp_info<-rowRanges(cosmic_67)[as.character(seqnames(rowRanges(cosmic_67)))==frequency_calls[i,2]&start(ranges(rowRanges(cosmic_67)))==frequency_calls[i,3]]
                                 if(length(snp_info)>0){
-                                    for(j in 1:length(snp_info[,1])){
+                                    for(j in seq_along(snp_info[,1])){
                                         if(snp_info$REF==frequency_calls[i,4]&&
                                            snp_info$ALT[[1]]==frequency_calls[i,5]||
                                            (snp_info$REF==as.character(complement(DNAString(frequency_calls[i,4])))&&
@@ -8405,7 +8405,7 @@ appreci8Rshiny <- function() {
                             }
                             if(!is.null(input$clinvar)){
                                 snp_info_temp<-data.frame()
-                                for(j in 1:length(strsplit(frequency_calls[i,14],
+                                for(j in seq_along(strsplit(frequency_calls[i,14],
                                                            split=",")[[1]])){
                                     if(!is.na(strsplit(frequency_calls[i,14],
                                                        split=",")[[1]][j])){
@@ -8427,7 +8427,7 @@ appreci8Rshiny <- function() {
                                 if(length(snp_info)>0){
                                     snp_info2<-snp_info[snp_info[,2]==(as.numeric(frequency_calls[i,3])-1),]
                                     if(length(snp_info2[,1])>0){
-                                        for(j in 1:length(snp_info2[,1])){
+                                        for(j in seq_along(snp_info2[,1])){
                                             if(snp_info2[j,4]=="-"&&
                                                snp_info2[j,5]==substr(frequency_calls[i,5],
                                                                       2,
@@ -8469,7 +8469,7 @@ appreci8Rshiny <- function() {
                             ncbi<-rbind(ncbi,temp)
                         }
                     }
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         if(!is.na(results[i,6])){
                             results$dbSNP_MAF[i]<-as.numeric(max(ncbi[ncbi[,1]==results[i,6],8]))
                             if(sum(ncbi[ncbi[,1]==results[i,6],7]==results[i,4],na.rm=TRUE)>0){
@@ -8537,7 +8537,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                     }
-                    for(i in 1:length(checkpoint[,1])){
+                    for(i in seq_along(checkpoint[,1])){
                         for(j in 2:length(checkpoint[1,])){
                             if(!is.na(checkpoint[i,j])){
                                 checkpoint[i,j]<-6
@@ -8687,7 +8687,7 @@ appreci8Rshiny <- function() {
                                  detail="->  Consider samples with the same call")
                     progress_small <- shiny::Progress$new()
                     progress_small$set(message = "", value = 0)
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call ",i," out of ",
                                                         length(results[,1])))
@@ -8699,7 +8699,7 @@ appreci8Rshiny <- function() {
                                  detail="->  Consider samples with a call at the same position")
                     progress_small <- shiny::Progress$new()
                     progress_small$set(message = "", value = 0)
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         progress_small$inc(1/length(results[,1]),
                                            detail=paste("-> Call ",i," out of ",
                                                         length(results[,1])))
@@ -8743,7 +8743,7 @@ appreci8Rshiny <- function() {
                     progress$inc(1/13,detail="->  Consider nr of databases")
                     if(length(database_calls[1,])>10){
                         if(length(grep("dbSNP",names(database_calls)))>0){
-                            for(i in 1:length(database_calls[,1])){
+                            for(i in seq_along(database_calls[,1])){
                                 if(!is.na(results$dbSNP[i])){
                                     artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
                                     if(!is.na(results$dbSNP_MAF[i])&&
@@ -8758,7 +8758,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                         if(length(grep("G1000_AF",names(database_calls)))>0){
-                            for(i in 1:length(database_calls[,1])){
+                            for(i in seq_along(database_calls[,1])){
                                 if(!is.na(results$G1000_AF[i])){
                                     artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
                                     if(as.numeric(results$G1000_AF[i])<=0.001){
@@ -8771,7 +8771,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                         if(length(grep("ExAC_AF",names(database_calls)))>0){
-                            for(i in 1:length(database_calls[,1])){
+                            for(i in seq_along(database_calls[,1])){
                                 if(!is.na(results$ExAC_AF[i])){
                                     artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
                                     if(as.numeric(results$ExAC_AF[i])<=0.0005){
@@ -8784,7 +8784,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                         if(length(grep("ESP6500_AF",names(database_calls)))>0){
-                            for(i in 1:length(database_calls[,1])){
+                            for(i in seq_along(database_calls[,1])){
                                 if(!is.na(results$ESP6500_AF[i])){
                                     artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
                                     if(as.numeric(results$ESP6500_AF[i])<=0.0003){
@@ -8797,7 +8797,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                         if(length(grep("GAD_AF",names(database_calls)))>0){
-                            for(i in 1:length(database_calls[,1])){
+                            for(i in seq_along(database_calls[,1])){
                                 if(!is.na(results$GAD_AF[i])){
                                     artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
                                     if(as.numeric(results$GAD_AF[i])<=0.001){
@@ -8810,7 +8810,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                         if(length(grep("CosmicID",names(database_calls)))>0){
-                            for(i in 1:length(database_calls[,1])){
+                            for(i in seq_along(database_calls[,1])){
                                 if(!is.na(results$CosmicID[i])){
                                     artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
                                     artifact_because[i,6]<-sum(as.numeric(strsplit(as.character(database_calls$Cosmic_Counts[i]),split=",")[[1]]))
@@ -8824,7 +8824,7 @@ appreci8Rshiny <- function() {
                             }
                         }
                         if(length(grep("ClinVar",names(database_calls)))>0){
-                            for(i in 1:length(database_calls[,1])){
+                            for(i in seq_along(database_calls[,1])){
                                 if(!is.na(results$ClinVar[i])){
                                     artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
                                     if(length(grep("Pathogenic",
@@ -8844,7 +8844,7 @@ appreci8Rshiny <- function() {
 
                     #tolerated and freq
                     progress$inc(1/13,detail="->  Consider VAF when tolerated")
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         if(!is.na(results$VAF[i])&&((results$VAF[i]>=0.35&&
                                                      results$VAF[i]<=0.65)||
                                                     (results$VAF[i]>=0.85))){
@@ -8874,7 +8874,7 @@ appreci8Rshiny <- function() {
                     #test for strand bias (8 von 15)
                     progress$inc(1/13,detail="->  Consider strand bias")
                     strandbias<-rep(NA,length(results[,1]))
-                    for(i in 1:length(results[,1])){
+                    for(i in seq_along(results[,1])){
                         if(!is.na(results$Nr_Ref_fwd[i])&&
                            !is.na(results$Nr_Alt_fwd[i])&&
                            !is.na(results$Nr_Ref_rev[i])&&
@@ -8902,7 +8902,7 @@ appreci8Rshiny <- function() {
                     progress_small <- shiny::Progress$new()
                     progress_small$set(message = "", value = 0)
                     if(!is.null(input$hotspots)){
-                        for(i in 1:length(hotspots[,1])){
+                        for(i in seq_along(hotspots[,1])){
                             progress_small$inc(1/length(hotspots[,1]),
                                                detail=paste("->  Hotspot",i,
                                                             "out of",
@@ -8919,13 +8919,13 @@ appreci8Rshiny <- function() {
                                     if(length(found2)>0){
                                         flag<-rep(FALSE,length(results[,1]))
                                         if(is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])==1&&
                                                     nchar(results$Alt[found2[j]])==1
                                             }
                                         }
                                         if(!is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])==1&&
                                                     nchar(results$Alt[found2[j]])==1&&
                                                     as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
@@ -8942,12 +8942,12 @@ appreci8Rshiny <- function() {
                                     if(length(found2)>0){
                                         flag<-rep(FALSE,length(results[,1]))
                                         if(is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))!=0&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                                             }
                                         }
                                         if(!is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))!=0&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                                             }
                                         }
@@ -8964,12 +8964,12 @@ appreci8Rshiny <- function() {
                                     if(length(found2)>0){
                                         flag<-rep(FALSE,length(results[,1]))
                                         if(is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                                             }
                                         }
                                         if(!is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-nchar(results$Ref[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                                             }
                                         }
@@ -8985,12 +8985,12 @@ appreci8Rshiny <- function() {
                                     if(length(found2)>0){
                                         flag<-rep(FALSE,length(results[,1]))
                                         if(is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-nchar(results$Alt[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0
                                             }
                                         }
                                         if(!is.na(hotspots[i,3])){
-                                            for(j in 1:length(found2)){
+                                            for(j in seq_along(found2)){
                                                 flag[found2[j]]<-nchar(results$Alt[found2[j]])>1&&(abs(nchar(results$Ref[found2[j]])-nchar(results$Alt[found2[j]]))%%3)!=0&&as.numeric(results$VAF[found2[j]])>=as.numeric(hotspots[i,3])
                                             }
                                         }
@@ -9022,7 +9022,7 @@ appreci8Rshiny <- function() {
                     progress_small$set(message = "Calculate Artifact Score",
                                        value = 0)
                     if(input$artifact_score=="No"){
-                        for(i in 1:length(results[,1])){
+                        for(i in seq_along(results[,1])){
                             progress_small$inc(1/length(results[,1]),
                                                detail=paste("-> Call",i,
                                                             "out of",
@@ -9162,7 +9162,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(input$artifact_score=="Yes"){
-                        for(i in 1:length(results[,1])){
+                        for(i in seq_along(results[,1])){
                             progress_small$inc(1/length(results[,1]),
                                                detail=paste("-> Call",i,
                                                             "out of",
@@ -9310,7 +9310,7 @@ appreci8Rshiny <- function() {
                     progress_small$set(message = "Calculate Polymorphism Score",
                                        value = 0)
                     if(input$polymorphism_score=="No"){
-                        for(i in 1:length(results[,1])){
+                        for(i in seq_along(results[,1])){
                             progress_small$inc(1/length(results[,1]),
                                                detail=paste("-> Call",i,
                                                             "out of",
@@ -9386,7 +9386,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(input$polymorphism_score=="Yes"){
-                        for(i in 1:length(results[,1])){
+                        for(i in seq_along(results[,1])){
                             progress_small$inc(1/length(results[,1]),
                                                detail=paste("-> Call",i,
                                                             "out of",
@@ -9471,7 +9471,7 @@ appreci8Rshiny <- function() {
                     progress_small <- shiny::Progress$new()
                     progress_small$set(message = "Correct Scores", value = 0)
                     if(input$artifact_score=="No"){
-                        for(i in 1:length(results[,1])){
+                        for(i in seq_along(results[,1])){
                             progress_small$inc(1/length(results[,1]),
                                                detail=paste("-> Call",i,
                                                             "out of",
@@ -9546,7 +9546,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(input$artifact_score=="Yes"){
-                        for(i in 1:length(results[,1])){
+                        for(i in seq_along(results[,1])){
                             progress_small$inc(1/length(results[,1]),
                                                detail=paste("-> Call",i,
                                                             "out of",
@@ -9650,7 +9650,7 @@ appreci8Rshiny <- function() {
                                          VAFandBQFiltered=NA,Mutations=NA,
                                          Polymorphisms=NA,Artifacts=NA)
                     }
-                    for(i in 1:length(overview4[,1])){
+                    for(i in seq_along(overview4[,1])){
                         overview4[i,4]<-length(results.mutations[results.mutations[,1]==overview4[i,1],1])
                         overview4[i,5]<-length(results.polymorphisms[results.polymorphisms[,1]==overview4[i,1],1])
                         overview4[i,6]<-length(results.artifacts[results.artifacts[,1]==overview4[i,1],1])
@@ -9713,7 +9713,7 @@ appreci8Rshiny <- function() {
                         overview4<-cbind(checkpointFile[,1],RawCalls=NA,
                                          VAFandBQFiltered=NA,Mutations=NA,
                                          Polymorphisms=NA,Artifacts=NA)
-                        for(i in 1:length(overview4[,1])){
+                        for(i in seq_along(overview4[,1])){
                             overview4[i,4]<-length(results.mutations[results.mutations[,1]==overview4[i,1],1])
                             overview4[i,5]<-length(results.polymorphisms[results.polymorphisms[,1]==overview4[i,1],1])
                             overview4[i,6]<-length(results.artifacts[results.artifacts[,1]==overview4[i,1],1])
