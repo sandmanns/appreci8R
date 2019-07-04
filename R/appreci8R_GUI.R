@@ -5634,20 +5634,20 @@ appreci8Rshiny <- function() {
 
                     }
                 }
-                if(length(results[!is.na(results[,6]),6])<=30){
+                if(length(results[!is.na(results[,6]),6])<=3){
                     suppressWarnings(ncbi<-ncbi_snp_query2(results[!is.na(results[,6]),6])[[1]])
                 }
-                if(length(results[!is.na(results[,6]),6])>30){
+                if(length(results[!is.na(results[,6]),6])>3){
                     abfrage<-results[!is.na(results[,6]),6]
-                    if(((length(results[!is.na(results[,6]),6])-1)%%30)==0){
-                        limits<-seq(1,length(results[!is.na(results[,6]),6]),30)
+                    if(((length(results[!is.na(results[,6]),6])-1)%%3)==0){
+                        limits<-seq(1,length(results[!is.na(results[,6]),6]),3)
                     }
-                    if(((length(results[!is.na(results[,6]),6])-1)%%30)!=0){
+                    if(((length(results[!is.na(results[,6]),6])-1)%%3)!=0){
                         limits<-c(seq(1,length(results[!is.na(results[,6]),6]),
-                                      30),
+                                      3),
                                   length(results[!is.na(results[,6]),6]))
                     }
-                    suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:30])[[1]])
+                    suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:3])[[1]])
                     for(i in 2:(length(limits)-1)){
                         suppressWarnings(temp<-ncbi_snp_query2(abfrage[limits[i]:(limits[i+1]-1)])[[1]])
                         ncbi<-rbind(ncbi,temp)
@@ -8447,23 +8447,23 @@ appreci8Rshiny <- function() {
 
                         }
                     }
-                    if(length(results[!is.na(results[,6]),6])<=30){
+                    if(length(results[!is.na(results[,6]),6])<=3){
                         suppressWarnings(ncbi<-ncbi_snp_query2(results[!is.na(results[,6]),6])[[1]])
                     }
-                    if(length(results[!is.na(results[,6]),6])>30){
+                    if(length(results[!is.na(results[,6]),6])>3){
                         abfrage<-results[!is.na(results[,6]),6]
-                        if(((length(results[!is.na(results[,6]),6])-1)%%30)==0){
+                        if(((length(results[!is.na(results[,6]),6])-1)%%3)==0){
                             limits<-seq(1,
                                         length(results[!is.na(results[,6]),6]),
-                                        30)
+                                        3)
                         }
-                        if(((length(results[!is.na(results[,6]),6])-1)%%30)!=0){
+                        if(((length(results[!is.na(results[,6]),6])-1)%%3)!=0){
                             limits<-c(seq(1,
                                           length(results[!is.na(results[,6]),6]),
-                                          30),
+                                          3),
                                       length(results[!is.na(results[,6]),6]))
                         }
-                        suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:30])[[1]])
+                        suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:3])[[1]])
                         for(i in 2:(length(limits)-1)){
                             suppressWarnings(temp<-ncbi_snp_query2(abfrage[limits[i]:(limits[i+1]-1)])[[1]])
                             ncbi<-rbind(ncbi,temp)
