@@ -32,10 +32,10 @@ File type of the variant calling results (".vcf" or ".txt").
 SNVs and indels are reported in the same file (\code{TRUE} or FALSE).
 }
   \item{caller_snv_names_add}{
-Suffix for naming the variant calling files containing SNVs (only evaluated if \code{caller_snv_indel==TRUE}).
+Suffix for naming the variant calling files containing SNVs (only evaluated if \code{caller_snv_indel==FALSE}).
 }
   \item{caller_indel_names_add}{
-Suffix for naming the variant calling files containing indels (only evaluated if \code{caller_snv_indel==TRUE}).
+Suffix for naming the variant calling files containing indels (only evaluated if \code{caller_snv_indel==FALSE}).
 }
   \item{caller_chr}{
 Column of the variant calling input containing information on chr (default: 1).
