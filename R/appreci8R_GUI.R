@@ -1263,7 +1263,7 @@ appreci8Rshiny <- function() {
                                                   "Consider ESP6500? (MafDb.ESP6500SI.V2.SSA137.hs37d5)",
                                                   value=TRUE)})
             output$gadUI<-renderUI({checkboxInput("gad",
-                                                  "Consider Genome Aggregation Database? (MafDb.gnomADex.r2.0.1.hs37d5)",
+                                                  "Consider Genome Aggregation Database? (MafDb.gnomADex.r2.1.hs37d5)",
                                                   value=TRUE)})
             output$cosmicUI<-renderUI({checkboxInput("cosmic",
                                                      "Consider COSMIC? (COSMIC.67)",
@@ -3307,7 +3307,7 @@ appreci8Rshiny <- function() {
                                                       "Consider ESP6500? (MafDb.ESP6500SI.V2.SSA137.hs37d5)",
                                                       value=as.character(config[178,2])=="TRUE")})
                 output$gadUI<-renderUI({checkboxInput("gad",
-                                                      "Consider Genome Aggregation Database? (MafDb.gnomADex.r2.0.1.hs37d5)",
+                                                      "Consider Genome Aggregation Database? (MafDb.gnomADex.r2.1.hs37d5)",
                                                       value=as.character(config[179,2])=="TRUE")})
                 output$cosmicUI<-renderUI({checkboxInput("cosmic",
                                                          "Consider COSMIC? (COSMIC.67)",
@@ -5197,7 +5197,7 @@ appreci8Rshiny <- function() {
                 }
                 if(!is.null(input$gad)){
                     results<-cbind(results,GAD_AF=NA)
-                    gad<-MafDb.gnomADex.r2.0.1.hs37d5
+                    gad<-MafDb.gnomADex.r2.1.hs37d5
                 }
                 if(!is.null(input$cosmic)){
                     results<-cbind(results,CosmicID=NA,Cosmic_Counts=NA)
@@ -8050,7 +8050,7 @@ appreci8Rshiny <- function() {
                     }
                     if(!is.null(input$gad)){
                         results<-cbind(results,GAD_AF=NA)
-                        gad<-MafDb.gnomADex.r2.0.1.hs37d5
+                        gad<-MafDb.gnomADex.r2.1.hs37d5
                     }
                     if(!is.null(input$cosmic)){
                         results<-cbind(results,CosmicID=NA,Cosmic_Counts=NA)

@@ -755,7 +755,7 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
     }
     if(gadDB==TRUE){
         results<-cbind(results,GAD_AF=NA)
-        gad<-MafDb.gnomADex.r2.0.1.hs37d5
+        gad<-MafDb.gnomADex.r2.1.hs37d5
     }
     if(cosmicDB==TRUE){
         results<-cbind(results,CosmicID=NA,Cosmic_Counts=NA)
