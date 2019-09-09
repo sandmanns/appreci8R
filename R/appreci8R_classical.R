@@ -1048,19 +1048,19 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
             if(length(snp_info)>0){
                 snp_info_rs<-snp_info$RefSNP_id[(start(ranges(snp_info))<=frequency_calls[i,3])&(end(ranges(snp_info))>=(as.numeric(frequency_calls[i,3])+nchar(frequency_calls[i,4])-1))]
                 if(length(snp_info_rs)>0){
-                    ncbi<-ncbi_snp_query2(snp_info_rs)[[1]]
+                    ncbi<-ncbi_snp_query(snp_info_rs)
                     for(j in seq_along(ncbi[,1])){
                         if(nchar(results[i,4])>nchar(results[i,5])){
                             if(length(grep(substr(results[i,4],2,
                                                   nchar(results[i,4])),
-                                           ncbi[j,6]))>0){
+                                           ncbi[j,9]))>0){
                                 results[i,6]<-ncbi[j,1]
                             }
                         }
                         if(nchar(results[i,4])<nchar(results[i,5])){
                             if(length(grep(substr(results[i,5],2,
                                                   nchar(results[i,5])),
-                                           ncbi[j,6]))>0){
+                                           ncbi[j,9]))>0){
                                 results[i,6]<-ncbi[j,1]
                             }
                         }
@@ -1145,7 +1145,7 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
         }
     }
     if(length(results[!is.na(results[,6]),6])<=3){
-        suppressWarnings(ncbi<-ncbi_snp_query2(results[!is.na(results[,6]),6])[[1]])
+        suppressWarnings(ncbi<-ncbi_snp_query(results[!is.na(results[,6]),6]))
     }
     if(length(results[!is.na(results[,6]),6])>3){
         abfrage<-results[!is.na(results[,6]),6]
@@ -1156,16 +1156,16 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
             limits<-c(seq(1,length(results[!is.na(results[,6]),6]),3),
                       length(results[!is.na(results[,6]),6]))
         }
-        suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:3])[[1]])
+        suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:3]))
         for(i in 2:(length(limits)-1)){
-            suppressWarnings(temp<-ncbi_snp_query2(abfrage[limits[i]:(limits[i+1]-1)])[[1]])
+            suppressWarnings(temp<-ncbi_snp_query2(abfrage[limits[i]:(limits[i+1]-1)]))
             ncbi<-rbind(ncbi,temp)
         }
     }
     for(i in seq_along(results[,1])){
         if(!is.na(results[i,6])){
-            suppressWarnings(results$dbSNP_MAF[i]<-as.numeric(max(ncbi[ncbi[,1]==results[i,6],8])))
-            if(sum(ncbi[ncbi[,1]==results[i,6],7]==results[i,4],na.rm=TRUE)>0){
+            suppressWarnings(results$dbSNP_MAF[i]<-as.numeric(max(ncbi[ncbi[,1]==results[i,6],10])))
+            if(sum(ncbi[ncbi[,1]==results[i,6],9]==results[i,4],na.rm=TRUE)>0){
                 if(!is.na(results$dbSNP_MAF[i])){
                     results$dbSNP_MAF[i]<-1-results$dbSNP_MAF[i]
                 }
