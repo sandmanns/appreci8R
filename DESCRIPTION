@@ -1,7 +1,7 @@
 Package: appreci8R
 Type: Package
 Title: appreci8R: an R/Bioconductor package for filtering SNVs and short indels with high sensitivity and high PPV 
-Version: 1.4.0
+Version: 1.5.0
 Author: Sarah Sandmann
 Maintainer: Sarah Sandmann <sarah.sandmann@uni-muenster.de>
 Description: The appreci8R is an R version of our appreci8-algorithm - A Pipeline for
