@@ -221,7 +221,6 @@ appreci8Rshiny <- function() {
                                                             uiOutput("dbSNPUI"),
                                                             uiOutput("1kgenomesUI"),
                                                             uiOutput("exacUI"),
-                                                            uiOutput("espUI"),
                                                             uiOutput("gadUI"),
                                                             uiOutput("cosmicUI"),
                                                             uiOutput("clinvarUI"),
@@ -1259,9 +1258,6 @@ appreci8Rshiny <- function() {
             output$exacUI<-renderUI({checkboxInput("exac",
                                                    "Consider ExAC? (MafDb.ExAC.r1.0.hs37d5)",
                                                    value=TRUE)})
-            output$espUI<-renderUI({checkboxInput("esp",
-                                                  "Consider ESP6500? (MafDb.ESP6500SI.V2.SSA137.hs37d5)",
-                                                  value=TRUE)})
             output$gadUI<-renderUI({checkboxInput("gad",
                                                   "Consider Genome Aggregation Database? (MafDb.gnomADex.r2.1.hs37d5)",
                                                   value=TRUE)})
@@ -2063,7 +2059,7 @@ appreci8Rshiny <- function() {
                     config[177,1]<-"exac"
                     config[177,2]<-ifelse(!is.null(input$exac),input$exac,NA)
                     config[178,1]<-"esp"
-                    config[178,2]<-ifelse(!is.null(input$esp),input$esp,NA)
+                    config[178,2]<-NA
                     config[179,1]<-"gad"
                     config[179,2]<-ifelse(!is.null(input$gad),input$gad,NA)
                     config[180,1]<-"cosmic"
@@ -3303,9 +3299,6 @@ appreci8Rshiny <- function() {
                 output$exacUI<-renderUI({checkboxInput("exac",
                                                        "Consider ExAC? (MafDb.ExAC.r1.0.hs37d5)",
                                                        value=as.character(config[177,2])=="TRUE")})
-                output$espUI<-renderUI({checkboxInput("esp",
-                                                      "Consider ESP6500? (MafDb.ESP6500SI.V2.SSA137.hs37d5)",
-                                                      value=as.character(config[178,2])=="TRUE")})
                 output$gadUI<-renderUI({checkboxInput("gad",
                                                       "Consider Genome Aggregation Database? (MafDb.gnomADex.r2.1.hs37d5)",
                                                       value=as.character(config[179,2])=="TRUE")})
@@ -5191,10 +5184,6 @@ appreci8Rshiny <- function() {
                     results<-cbind(results,ExAC_AF=NA)
                     exac<-MafDb.ExAC.r1.0.hs37d5
                 }
-                if(!is.null(input$esp)){
-                    results<-cbind(results,ESP6500_AF=NA)
-                    esp6500<-MafDb.ESP6500SI.V2.SSA137.hs37d5
-                }
                 if(!is.null(input$gad)){
                     results<-cbind(results,GAD_AF=NA)
                     gad<-MafDb.gnomADex.r2.1.hs37d5
@@ -5445,16 +5434,6 @@ appreci8Rshiny <- function() {
                                 results$ExAC_AF[i]<-max(snp_info$AF)
                             }
                         }
-                        if(!is.null(input$esp)){
-                            snp_info<-gscores(esp6500,
-                                              GRanges(paste(frequency_calls[i,2],
-                                                            ":",
-                                                            frequency_calls[i,3],
-                                                            sep="")))
-                            if(length(snp_info)>0){
-                                results$ESP6500_AF[i]<-max(snp_info$AF)
-                            }
-                        }
                         if(!is.null(input$gad)){
                             snp_info<-gscores(gad,
                                               GRanges(paste(frequency_calls[i,2],
@@ -5665,9 +5644,6 @@ appreci8Rshiny <- function() {
                             }
                             if(!is.na(results$ExAC_AF[i])){
                                 results$ExAC_AF[i]<-1-results$ExAC_AF[i]
-                            }
-                            if(!is.na(results$ESP6500_AF[i])){
-                                results$ESP6500_AF[i]<-1-results$ESP6500_AF[i]
                             }
                             if(!is.na(results$GAD_AF[i])){
                                 results$GAD_AF[i]<-1-results$GAD_AF[i]
@@ -5940,22 +5916,6 @@ appreci8Rshiny <- function() {
                                                                1,na.rm=TRUE)
                                 }
                                 if(as.numeric(results$ExAC_AF[i])>0.0005){
-                                    artifact_because[i,4]<-sum(artifact_because[i,4],
-                                                               1,na.rm=TRUE)
-                                }
-                            }
-                        }
-                    }
-                    if(length(grep("ESP6500_AF",names(database_calls)))>0){
-                        for(i in seq_along(database_calls[,1])){
-                            if(!is.na(results$ESP6500_AF[i])){
-                                artifact_because[i,3]<-sum(artifact_because[i,3],
-                                                           1,na.rm=TRUE)
-                                if(as.numeric(results$ESP6500_AF[i])<=0.0003){
-                                    artifact_because[i,5]<-sum(artifact_because[i,5],
-                                                               1,na.rm=TRUE)
-                                }
-                                if(as.numeric(results$ESP6500_AF[i])>0.0003){
                                     artifact_because[i,4]<-sum(artifact_because[i,4],
                                                                1,na.rm=TRUE)
                                 }
@@ -8044,10 +8004,6 @@ appreci8Rshiny <- function() {
                         results<-cbind(results,ExAC_AF=NA)
                         exac<-MafDb.ExAC.r1.0.hs37d5
                     }
-                    if(!is.null(input$esp)){
-                        results<-cbind(results,ESP6500_AF=NA)
-                        esp6500<-MafDb.ESP6500SI.V2.SSA137.hs37d5
-                    }
                     if(!is.null(input$gad)){
                         results<-cbind(results,GAD_AF=NA)
                         gad<-MafDb.gnomADex.r2.1.hs37d5
@@ -8262,16 +8218,6 @@ appreci8Rshiny <- function() {
                                     results$ExAC_AF[i]<-max(snp_info$AF)
                                 }
                             }
-                            if(!is.null(input$esp)){
-                                snp_info<-gscores(esp6500,
-                                                  GRanges(paste(frequency_calls[i,2],
-                                                                ":",
-                                                                frequency_calls[i,3],
-                                                                sep="")))
-                                if(length(snp_info)>0){
-                                    results$ESP6500_AF[i]<-max(snp_info$AF)
-                                }
-                            }
                             if(!is.null(input$gad)){
                                 snp_info<-gscores(gad,
                                                   GRanges(paste(frequency_calls[i,2],
@@ -8481,9 +8427,6 @@ appreci8Rshiny <- function() {
                                 }
                                 if(!is.na(results$ExAC_AF[i])){
                                     results$ExAC_AF[i]<-1-results$ExAC_AF[i]
-                                }
-                                if(!is.na(results$ESP6500_AF[i])){
-                                    results$ESP6500_AF[i]<-1-results$ESP6500_AF[i]
                                 }
                                 if(!is.na(results$GAD_AF[i])){
                                     results$GAD_AF[i]<-1-results$GAD_AF[i]
@@ -8778,19 +8721,6 @@ appreci8Rshiny <- function() {
                                         artifact_because[i,5]<-sum(artifact_because[i,5],1,na.rm=TRUE)
                                     }
                                     if(as.numeric(results$ExAC_AF[i])>0.0005){
-                                        artifact_because[i,4]<-sum(artifact_because[i,4],1,na.rm=TRUE)
-                                    }
-                                }
-                            }
-                        }
-                        if(length(grep("ESP6500_AF",names(database_calls)))>0){
-                            for(i in seq_along(database_calls[,1])){
-                                if(!is.na(results$ESP6500_AF[i])){
-                                    artifact_because[i,3]<-sum(artifact_because[i,3],1,na.rm=TRUE)
-                                    if(as.numeric(results$ESP6500_AF[i])<=0.0003){
-                                        artifact_because[i,5]<-sum(artifact_because[i,5],1,na.rm=TRUE)
-                                    }
-                                    if(as.numeric(results$ESP6500_AF[i])>0.0003){
                                         artifact_because[i,4]<-sum(artifact_because[i,4],1,na.rm=TRUE)
                                     }
                                 }
