@@ -725,7 +725,7 @@ evaluateCovAndBQ <- function(output_folder,combined_calls_g,bam_folder,
 #Perform 6th analysis step - Determine Characteristics
 determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
                                      dbSNP=TRUE,`1kgenomes`=TRUE,exacDB=TRUE,
-                                     espDB=TRUE,gadDB=TRUE,cosmicDB=TRUE,
+                                     gadDB=TRUE,cosmicDB=TRUE,
                                      clinvarDB=TRUE) {
     #check if output folder really exists
     if(output_folder!=""&&file.exists(output_folder)==FALSE){
@@ -749,13 +749,9 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
         results<-cbind(results,ExAC_AF=NA)
         exac<-MafDb.ExAC.r1.0.hs37d5
     }
-    if(espDB==TRUE){
-        results<-cbind(results,ESP6500_AF=NA)
-        esp6500<-MafDb.ESP6500SI.V2.SSA137.hs37d5
-    }
     if(gadDB==TRUE){
         results<-cbind(results,GAD_AF=NA)
-        gad<-MafDb.gnomADex.r2.0.1.hs37d5
+        gad<-MafDb.gnomADex.r2.1.hs37d5
     }
     if(cosmicDB==TRUE){
         results<-cbind(results,CosmicID=NA,Cosmic_Counts=NA)
@@ -952,15 +948,6 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
                     results$ExAC_AF[i]<-max(snp_info$AF)
                 }
             }
-            if(espDB==TRUE){
-                snp_info<-gscores(esp6500,GRanges(paste(frequency_calls[i,2],
-                                                        ":",
-                                                        frequency_calls[i,3],
-                                                        sep="")))
-                if(length(snp_info)>0){
-                    results$ESP6500_AF[i]<-max(snp_info$AF)
-                }
-            }
             if(gadDB==TRUE){
                 snp_info<-gscores(gad,GRanges(paste(frequency_calls[i,2],":",
                                                     frequency_calls[i,3],
@@ -1048,19 +1035,19 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
             if(length(snp_info)>0){
                 snp_info_rs<-snp_info$RefSNP_id[(start(ranges(snp_info))<=frequency_calls[i,3])&(end(ranges(snp_info))>=(as.numeric(frequency_calls[i,3])+nchar(frequency_calls[i,4])-1))]
                 if(length(snp_info_rs)>0){
-                    ncbi<-ncbi_snp_query2(snp_info_rs)[[1]]
+                    ncbi<-ncbi_snp_query(snp_info_rs)
                     for(j in seq_along(ncbi[,1])){
                         if(nchar(results[i,4])>nchar(results[i,5])){
                             if(length(grep(substr(results[i,4],2,
                                                   nchar(results[i,4])),
-                                           ncbi[j,6]))>0){
+                                           ncbi[j,9]))>0){
                                 results[i,6]<-ncbi[j,1]
                             }
                         }
                         if(nchar(results[i,4])<nchar(results[i,5])){
                             if(length(grep(substr(results[i,5],2,
                                                   nchar(results[i,5])),
-                                           ncbi[j,6]))>0){
+                                           ncbi[j,9]))>0){
                                 results[i,6]<-ncbi[j,1]
                             }
                         }
@@ -1145,7 +1132,7 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
         }
     }
     if(length(results[!is.na(results[,6]),6])<=3){
-        suppressWarnings(ncbi<-ncbi_snp_query2(results[!is.na(results[,6]),6])[[1]])
+        suppressWarnings(ncbi<-ncbi_snp_query(results[!is.na(results[,6]),6]))
     }
     if(length(results[!is.na(results[,6]),6])>3){
         abfrage<-results[!is.na(results[,6]),6]
@@ -1156,16 +1143,16 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
             limits<-c(seq(1,length(results[!is.na(results[,6]),6]),3),
                       length(results[!is.na(results[,6]),6]))
         }
-        suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:3])[[1]])
+        suppressWarnings(ncbi<-ncbi_snp_query(abfrage[1:3]))
         for(i in 2:(length(limits)-1)){
-            suppressWarnings(temp<-ncbi_snp_query2(abfrage[limits[i]:(limits[i+1]-1)])[[1]])
+            suppressWarnings(temp<-ncbi_snp_query(abfrage[limits[i]:(limits[i+1]-1)]))
             ncbi<-rbind(ncbi,temp)
         }
     }
     for(i in seq_along(results[,1])){
         if(!is.na(results[i,6])){
-            suppressWarnings(results$dbSNP_MAF[i]<-as.numeric(max(ncbi[ncbi[,1]==results[i,6],8])))
-            if(sum(ncbi[ncbi[,1]==results[i,6],7]==results[i,4],na.rm=TRUE)>0){
+            suppressWarnings(results$dbSNP_MAF[i]<-as.numeric(max(ncbi[ncbi[,1]==results[i,6],10])))
+            if(sum(ncbi[ncbi[,1]==results[i,6],9]==results[i,4],na.rm=TRUE)>0){
                 if(!is.na(results$dbSNP_MAF[i])){
                     results$dbSNP_MAF[i]<-1-results$dbSNP_MAF[i]
                 }
@@ -1174,9 +1161,6 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
                 }
                 if(!is.na(results$ExAC_AF[i])){
                     results$ExAC_AF[i]<-1-results$ExAC_AF[i]
-                }
-                if(!is.na(results$ESP6500_AF[i])){
-                    results$ESP6500_AF[i]<-1-results$ESP6500_AF[i]
                 }
                 if(!is.na(results$GAD_AF[i])){
                     results$GAD_AF[i]<-1-results$GAD_AF[i]
@@ -1415,22 +1399,6 @@ finalFiltration <- function(output_folder,frequency_calls_g,database_calls_g,
                                                    na.rm=TRUE)
                     }
                     if(as.numeric(results$ExAC_AF[i])>0.0005){
-                        artifact_because[i,4]<-sum(artifact_because[i,4],1,
-                                                   na.rm=TRUE)
-                    }
-                }
-            }
-        }
-        if(length(grep("ESP6500_AF",names(database_calls)))>0){
-            for(i in seq_along(database_calls[,1])){
-                if(!is.na(results$ESP6500_AF[i])){
-                    artifact_because[i,3]<-sum(artifact_because[i,3],1,
-                                               na.rm=TRUE)
-                    if(as.numeric(results$ESP6500_AF[i])<=0.0003){
-                        artifact_because[i,5]<-sum(artifact_because[i,5],1,
-                                                   na.rm=TRUE)
-                    }
-                    if(as.numeric(results$ESP6500_AF[i])>0.0003){
                         artifact_because[i,4]<-sum(artifact_because[i,4],1,
                                                    na.rm=TRUE)
                     }

@@ -9,7 +9,7 @@ Determine characteristics of the calls
 \usage{
 determineCharacteristics(output_folder, frequency_calls_g, predict,
                          dbSNP = TRUE, `1kgenomes` = TRUE, exacDB = TRUE,
-                         espDB = TRUE, gadDB = TRUE, cosmicDB = TRUE,
+                         gadDB = TRUE, cosmicDB = TRUE,
                          clinvarDB = TRUE)
 }
 \arguments{
@@ -31,9 +31,6 @@ Query 1000 Genomes (phase3) for the presence of your variants (\code{TRUE} or \c
   \item{exacDB}{
 Query ExAC (r1.0) for the presence of your variants (\code{TRUE} or \code{FALSE}; default \code{TRUE}).
 }
-  \item{espDB}{
-Query ESP6500 (V2) for the presence of your variants (\code{TRUE} or \code{FALSE}; default \code{TRUE}).
-}
   \item{gadDB}{
 Query Genome Aggregation Database (r2.0.1) for the presence of your variants (\code{TRUE} or \code{FALSE}; default \code{TRUE}).
 }
@@ -47,12 +44,12 @@ Query ClinVar (via rentrez) for the presence of your variants (\code{TRUE} or \c
 \details{
 The function \code{evaluateCharacteristics} determines an extended set of characteristics for the normalized, annotated, coverage and base quality filtered calls. This includes database check-ups and impact prediction on protein level:
 
-First, the database check-up is performed. At a maximum, dbSNP, 1000Genomes, ExAC, ESP6500, Genome Aggregation Database, COSMIC and ClinVar can be checked. If all the variables are set to \code{FALSE}, no database is checked and none will be reported. Thus, the check-up can be disabled.
+First, the database check-up is performed. At a maximum, dbSNP, 1000Genomes, ExAC, Genome Aggregation Database, COSMIC and ClinVar can be checked. If all the variables are set to \code{FALSE}, no database is checked and none will be reported. Thus, the check-up can be disabled.
 
 Second, the impact perdiction on protein level is performed. Impact can be predicted using either SIFT, Provean or PolyPhen2. In any case, the prediction is performed on the basis of rs-IDs. For every call, the predicted effect as well as the score is reported.
 }
 \value{
-A GRanges Object is returned containing all calls, information on their presence in the selected databases and information on the predicted effect. Reported metadata columns are (if all databases are selected): SampleID, Ref, Alt, dbSNP (containing the rs-ID), dbSNP_MAF, G1000_AF, ExAC_AF, ESP6500_AF, GAD_AF, CosmicID, Cosmic_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A>G, then c.complement is c.5284T>C), p. (variant on protein level containing position and amino acids).
+A GRanges Object is returned containing all calls, information on their presence in the selected databases and information on the predicted effect. Reported metadata columns are (if all databases are selected): SampleID, Ref, Alt, dbSNP (containing the rs-ID), dbSNP_MAF, G1000_AF, ExAC_AF, GAD_AF, CosmicID, Cosmic_Counts (number of Cosmic entries), ClinVar, Prediction (damaging or neutral), Score (on the basis of the selected prediction tool), c. (variant on cDNA level containing position and variant), c.complement (complement of the variant; if c. is c.5284A>G, then c.complement is c.5284T>C), p. (variant on protein level containing position and amino acids).
 
 If an output folder is provided, the output is saved as Results_Databases.txt.
 }
