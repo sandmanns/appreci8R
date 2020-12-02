@@ -1143,9 +1143,9 @@ determineCharacteristics <- function(output_folder,frequency_calls_g,predict,
             limits<-c(seq(1,length(results[!is.na(results[,6]),6]),3),
                       length(results[!is.na(results[,6]),6]))
         }
-        suppressWarnings(ncbi<-ncbi_snp_query2(abfrage[1:3]))
+        suppressWarnings(ncbi<-ncbi_snp_query(abfrage[1:3]))
         for(i in 2:(length(limits)-1)){
-            suppressWarnings(temp<-ncbi_snp_query2(abfrage[limits[i]:(limits[i+1]-1)]))
+            suppressWarnings(temp<-ncbi_snp_query(abfrage[limits[i]:(limits[i+1]-1)]))
             ncbi<-rbind(ncbi,temp)
         }
     }

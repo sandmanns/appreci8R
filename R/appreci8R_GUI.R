@@ -8394,7 +8394,7 @@ appreci8Rshiny <- function() {
                         }
                     }
                     if(length(results[!is.na(results[,6]),6])<=3){
-                        suppressWarnings(ncbi<-ncbi_snp_query2(results[!is.na(results[,6]),6]))
+                        suppressWarnings(ncbi<-ncbi_snp_query(results[!is.na(results[,6]),6]))
                     }
                     if(length(results[!is.na(results[,6]),6])>3){
                         abfrage<-results[!is.na(results[,6]),6]
