@@ -10,7 +10,6 @@ appreci8R is a package for combining and filterating the output of differen vari
 
 Important note: Currently, only hg19 is supported.
 
-
 Sandmann S, Karimi M, de Graaf AO, Rohde C, Göllner S, Varghese J, Ernsting J, Walldin G, van der Reijden BA, Müller-Tidow C, Malcovati L, Hellström-Lindberg E, Jansen JH, Dugas M. appreci8: a pipeline for precise variant calling integrating 8 tools. Bioinformatics. 2018 Dec 15;34(24):4205-4212. doi: 10.1093/bioinformatics/bty518. PMID: 29945233; PMCID: PMC6289140.
 
 
@@ -19,11 +18,21 @@ Sandmann S, Karimi M, de Graaf AO, Rohde C, Göllner S, Varghese J, Ernsting J, 
 To run appreci8R, you need R (Version 4.1.0 or higher).
 
 ## Installation
-Easiest way to download and install the appreci8R is via Bioconductor:
+appreci8R is available at Bioconductor. The latest version can be installed via:
 
-`BiocManager::install("appreci8R")`
+```
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("appreci8R")
+```
 
-`library(appreci8R)`
+The latest version available at github can be installed via:
+
+```
+if (!requireNamespace("devtools", quietly=TRUE))
+  install.packages("devtools")
+devtools::install_github("sandmanns/appreci8R")
+```
 
 
 ## Important Note
